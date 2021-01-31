@@ -5,7 +5,7 @@
 #include <map>
 
 namespace space {
-	enum class Color { white, black };
+	enum class Color { White, Black };
 	struct Position {
 		int rank;
 		int file;
@@ -16,7 +16,7 @@ namespace space {
 		int destinationRank;
 		int destinationFile;
 	};
-	enum class PieceType { Pawn, Castle, Knight, Bishop, Queen, King };
+	enum class PieceType { Pawn, EnPessantCapturablePawn, Rook, Knight, Bishop, Queen, King, None };
 	struct Piece {
 		PieceType pieceType;
 		Color color;
@@ -27,7 +27,7 @@ namespace space {
 		virtual Color getNextMove() const = 0;
 		virtual std::optional<Piece> getPiece(Position position) const = 0;
 		virtual bool canCastleLeft(Color color) const = 0;
-		virtual bool canCasleRight(Color color) const = 0;
+		virtual bool canCastleRight(Color color) const = 0;
 		virtual bool isStaleMate() const = 0;
 		virtual bool isCheckMate() const = 0;
 		virtual std::optional<Ptr> move(Move move) const = 0;

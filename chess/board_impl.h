@@ -7,7 +7,7 @@ namespace space {
 	class BoardImpl : public IBoard {
 	public:
 		using BoardImplPtr = std::shared_ptr<BoardImpl>;
-		Color getNextMove() const override;
+		Color whoPlaysNext() const override;
 		std::optional<Piece> getPiece(Position position) const override;
 		bool canCastleLeft(Color color) const override;
 		bool canCastleRight(Color color) const override;
@@ -24,6 +24,6 @@ namespace space {
 		bool m_canWhiteCastleRight;
 		bool m_canBlackCastleLeft;
 		bool m_canBlackCastleRight;
-		Color m_nextMove;
+		Color m_whoPlaysNext;
 	};
 }

@@ -24,10 +24,13 @@ namespace space {
 	class IBoard {
 	public:
 		using Ptr = std::shared_ptr<IBoard>;
-		virtual Color getNextMove() const = 0;
+		virtual Color whoPlaysNext() const = 0;
 		virtual std::optional<Piece> getPiece(Position position) const = 0;
+		
+		// (Left and right from that player's point of view)
 		virtual bool canCastleLeft(Color color) const = 0;
 		virtual bool canCastleRight(Color color) const = 0;
+
 		virtual bool isStaleMate() const = 0;
 		virtual bool isCheckMate() const = 0;
 		virtual std::optional<Ptr> move(Move move) const = 0;

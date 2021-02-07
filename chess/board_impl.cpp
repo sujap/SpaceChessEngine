@@ -4,9 +4,9 @@
 
 namespace space {
 
-	Color BoardImpl::getNextMove() const
+	Color BoardImpl::whoPlaysNext() const
 	{
-		return m_nextMove;
+		return m_whoPlaysNext;
 	}
 	std::optional<Piece> BoardImpl::getPiece(Position position) const
 	{
@@ -23,6 +23,8 @@ namespace space {
 			return m_canWhiteCastleLeft;
 		case Color::Black:
 			return m_canBlackCastleLeft;
+		default:
+			throw std::runtime_error("Invalid color");
 		}
 	}
 	bool BoardImpl::canCastleRight(Color color) const
@@ -33,6 +35,8 @@ namespace space {
 			return m_canWhiteCastleRight;
 		case Color::Black:
 			return m_canBlackCastleRight;
+		default:
+			throw std::runtime_error("Invalid color");
 		}
 	}
 	bool BoardImpl::isStaleMate() const
@@ -88,7 +92,7 @@ namespace space {
 				board->m_pieces[file][rank] = { PieceType::None, Color::White };
 
 		// white make the first move
-		board->m_nextMove = Color::White;
+		board->m_whoPlaysNext = Color::White;
 
 		return board;
 	}

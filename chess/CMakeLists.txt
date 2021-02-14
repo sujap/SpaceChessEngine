@@ -4,6 +4,6 @@
 cmake_minimum_required (VERSION 3.8)
 
 # Add source to this project's executable.
-add_library (chess "board.h" "board_impl.h" "board_impl.cpp")
+add_library (chess "board.h" "board_impl.h" "board_impl.cpp" "algo.h" "algo.cpp")
 
 # TODO: Add tests and install targets if needed.

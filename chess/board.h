@@ -6,6 +6,7 @@
 
 namespace space {
 	enum class Color { White, Black };
+	enum class PieceType { Pawn, EnPessantCapturablePawn, Rook, Knight, Bishop, Queen, King, None };
 	struct Position {
 		int rank;
 		int file;
@@ -15,8 +16,8 @@ namespace space {
 		int sourceFile;
 		int destinationRank;
 		int destinationFile;
+		PieceType promotedPiece = PieceType::None; // for pawn Promotion only
 	};
-	enum class PieceType { Pawn, EnPessantCapturablePawn, Rook, Knight, Bishop, Queen, King, None };
 	struct Piece {
 		PieceType pieceType;
 		Color color;

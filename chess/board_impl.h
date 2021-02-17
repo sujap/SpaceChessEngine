@@ -20,13 +20,16 @@ namespace space {
 
 	private:
 		Piece m_pieces[8][8];
-		bool m_canWhiteCastleLeft;
-		bool m_canWhiteCastleRight;
-		bool m_canBlackCastleLeft;
-		bool m_canBlackCastleRight;
+		bool m_WhiteKingNotMoved;
+		bool m_WhiteLeftRookNotMoved;
+		bool m_WhiteRightRookNotMoved;
+		bool m_BlackKingNotMoved;
+		bool m_BlackLeftRookNotMoved;
+		bool m_BlackRightRookNotMoved;
 		Color m_whoPlaysNext;
-		bool isLegalMove(Move m);
-		std::map<Move, Ptr>getAllmoves(int rank, int file);
-		inline bool inRange(int x) { return (x >= 0) && (x < 8); }
+		bool checkObstructions(Move m);
+		std::map<Move, Ptr>getAllmoves() const;
+		std::map<Move, Ptr>getAllmoves(int rank, int file) const;
+		inline bool inRange(int x) const { return (x >= 0) && (x < 8); }
 	};
 }

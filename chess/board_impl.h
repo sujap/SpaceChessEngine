@@ -1,6 +1,9 @@
 #pragma once
 
 #include "board.h"
+#include "fen.h"
+
+#include <array>
 
 namespace space {
 
@@ -17,15 +20,14 @@ namespace space {
 		std::map<Move, Ptr> getPossibleMoves() const override;
 
 		static Ptr getStartingBoard();
+		static Ptr fromFen(const Fen& fen);
 
 	private:
-		Piece m_pieces[8][8];
-		bool m_WhiteKingNotMoved;
-		bool m_WhiteLeftRookNotMoved;
-		bool m_WhiteRightRookNotMoved;
-		bool m_BlackKingNotMoved;
-		bool m_BlackLeftRookNotMoved;
-		bool m_BlackRightRookNotMoved;
+		std::array<std::array<Piece, 8>, 8> m_pieces;
+		bool m_canWhiteCastleLeft;
+		bool m_canWhiteCastleRight;
+		bool m_canBlackCastleLeft;
+		bool m_canBlackCastleRight;
 		Color m_whoPlaysNext;
 		bool checkObstructions(Move m);
 		std::map<Move, Ptr>getAllmoves() const;

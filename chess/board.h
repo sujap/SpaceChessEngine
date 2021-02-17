@@ -9,6 +9,7 @@ namespace space {
 	struct Position {
 		int rank;
 		int file;
+		Position(int v_rank, int v_file) : rank(v_rank), file(v_file) {}
 	};
 	struct Move {
 		int sourceRank;

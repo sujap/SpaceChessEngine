@@ -45,6 +45,11 @@ namespace space {
 	{
 		return m_whoPlaysNext;
 	}
+
+	Color BoardImpl::getColor(bool current = true) const{
+		return (current == (this->m_whoPlaysNext == Color::White) ? Color::White : Color::Black);
+	}
+
 	std::optional<Piece> BoardImpl::getPiece(Position position) const
 	{
 		if (m_pieces[position.rank][position.file].pieceType == PieceType::None)
@@ -64,13 +69,13 @@ namespace space {
 		switch (color)
 		{
 		case Color::White:
-			flag = flag && m_WhiteKingNotMoved && m_WhiteLeftRookNotMoved;
+			flag = flag && this->m_canWhiteCastleLeft;
 			for (int j = 1; j <= 3; j++)
 				flag = flag && (this->m_pieces[0][j].pieceType == PieceType::None);
 			return flag;
 		
 		case Color::Black:
-			flag = flag && m_BlackKingNotMoved && m_BlackLeftRookNotMoved;
+			flag = flag && this->m_canBlackCastleLeft;
 			for (int j = 5; j <= 6; j++)
 				flag = flag && (this->m_pieces[7][j].pieceType == PieceType::None);
 			return flag;
@@ -85,13 +90,13 @@ namespace space {
 		switch (color)
 		{
 		case Color::White:
-			flag = flag && m_WhiteKingNotMoved && m_WhiteRightRookNotMoved;
+			flag = flag && this->m_canWhiteCastleRight;
 			for (int j = 5; j <= 6; j++)
 				flag = flag && (this->m_pieces[0][j].pieceType == PieceType::None);
 			return flag;
 
 		case Color::Black:
-			flag = flag && m_BlackKingNotMoved && m_BlackRightRookNotMoved;
+			flag = flag && this->m_canBlackCastleRight;
 			for (int j = 1; j <= 3; j++)
 				flag = flag && (this->m_pieces[0][j].pieceType == PieceType::None);
 			return flag;
@@ -100,16 +105,46 @@ namespace space {
 			throw std::runtime_error("Invalid color");
 		}
 	}
+	
+
+
+	bool BoardImpl::isCheckMate(int rank, int file,bool current = true) const
+	{
+		Color c = this->getColor(current);
+		if (rank == -1 || file == -1) { // locate king
+			for (int i = 0; i < 8; i++) {
+				for (int j = 0; j < 8; j++) {
+					Piece p = this->m_pieces[i][j];
+					if(p.color != c && p.pieceType == PieceType::King){
+						rank = i;
+						file = j;
+					}
+				}
+			}
+		}
+
+		std::vector<Move> allMoves = this->getAllmovesWithoutObstructions(current);
+		for (Move m : allMoves) {
+			if (m.destinationRank == rank && m.destinationFile == file)
+				return true;
+		}
+		return false;
+	}
+
+
+
+
 	bool BoardImpl::isStaleMate() const
 	{
-		std::map<Move, Ptr> allMoves = this->getAllmoves(); //TODO
+		std::map<Move, IBoard::Ptr> allMoves = this->getPossibleMoves();
 
-		return false;
+		return (allMoves.size() == 0);
 
 	}
+
 	bool BoardImpl::isCheckMate() const
 	{
-		throw std::runtime_error("Not yet implemented.");
+		return this->isCheckMate(-1, -1, true);
 	}
 
 
@@ -119,19 +154,136 @@ namespace space {
 
 		for (int i = 0; i < 8; i++) {
 			for (int j = 0; j < 8; j++) {
-				newBoard->m_pieces[i][j] = this->m_pieces[i][j];
+				Piece p = this->m_pieces[i][j];
+				newBoard->m_pieces[i][j] = {p.pieceType, p.color };
 			}
 		}
+		newBoard->m_canWhiteCastleLeft = this->m_canWhiteCastleLeft;
+		newBoard->m_canWhiteCastleRight = this->m_canWhiteCastleRight;
+		newBoard->m_canBlackCastleLeft = this->m_canBlackCastleLeft;
+		newBoard->m_canBlackCastleRight = this->m_canBlackCastleRight;
+		newBoard->m_whoPlaysNext = (this->m_whoPlaysNext == Color::White ? Color::Black : Color::White);
+
+		Piece pSource = this->m_pieces[move.sourceRank][move.sourceFile];
+		Piece pSourceNew = newBoard->m_pieces[move.sourceRank][move.sourceFile];
+		Piece pNewTgt = newBoard->m_pieces[move.destinationRank][move.destinationFile];
+
+		pSourceNew = { PieceType::None, Color::White };
+		pNewTgt = { pSource.pieceType, pSource.color };
 
 
+		// Castling bools update
+		switch (this->m_whoPlaysNext) {
+			case Color::White:
+				if (pSource.pieceType == PieceType::King)
+					newBoard->m_canWhiteCastleLeft = newBoard->m_canWhiteCastleRight = false;
+				else if (pSource.pieceType == PieceType::Rook) {
+					if (move.sourceRank == 0) {
+						if (move.sourceFile == 0)
+							newBoard->m_canWhiteCastleLeft = false;
+						else if (move.sourceFile == 7)
+							newBoard->m_canWhiteCastleRight = false;
+					}
+				}
+				break;
+			case Color::Black:
+				if (pSource.pieceType == PieceType::King)
+					newBoard->m_canBlackCastleLeft = newBoard->m_canBlackCastleRight = false;
+				else if (pSource.pieceType == PieceType::Rook) {
+					if (move.sourceRank == 7) {
+						if (move.sourceFile == 7)
+							newBoard->m_canWhiteCastleLeft = false;
+						else if (move.sourceFile == 0)
+							newBoard->m_canWhiteCastleRight = false;
+					}
+				}
+		}
 
+		switch (pSource.pieceType) {
+		case PieceType::King:
+			int fileChange = move.destinationFile - move.sourceFile;
+			if (fileChange == 2 || fileChange == -2) {    // castling
+				int rookFile = (fileChange > 0 ? 7 : 0);
+				Piece pRook = this->m_pieces[move.sourceRank][rookFile];
+				// assert ??
+				newBoard->m_pieces[move.sourceRank][rookFile].pieceType = PieceType::None;
+				int rookDestFile = (move.sourceFile + move.destinationFile) / 2;
+				newBoard->m_pieces[move.sourceRank][rookDestFile] = { pRook.pieceType, pRook.color };
+			}
 
+			break;
+		case PieceType::Pawn:
+			if (move.destinationRank == 0 || move.destinationRank == 7) {  // promotion
+				pNewTgt.pieceType = move.promotedPiece; 
+			}
 
-		throw std::runtime_error("Not yet implemented.");
+			switch (pSource.color){
+			case Color::White:
+				if (move.sourceRank == 1 && move.destinationRank == 3) {  // double move
+					pNewTgt.pieceType = PieceType::EnPessantCapturablePawn;
+				}
+				else if (move.sourceRank == 4 && 
+					newBoard->m_pieces[move.sourceRank][move.destinationFile].pieceType 
+							== PieceType::EnPessantCapturablePawn){
+					newBoard->m_pieces[move.sourceRank][move.destinationFile].pieceType
+						== PieceType::None;    // En passant capture
+				}
+				break;
+			case Color::Black:
+				if (move.sourceRank == 6 && move.destinationRank == 4) {  // double move
+					pNewTgt.pieceType = PieceType::EnPessantCapturablePawn;
+				}
+				else if (move.sourceRank == 3 &&
+					newBoard->m_pieces[move.sourceRank][move.destinationFile].pieceType
+					== PieceType::EnPessantCapturablePawn) {
+					newBoard->m_pieces[move.sourceRank][move.destinationFile].pieceType
+						== PieceType::None;    // En passant capture
+				}
+				break;
+			default:
+				break;
+			}
+			break;
+		default:
+			break;
+		}
+
+		int enPassantRow = pSource.color == Color::White ? 4 : 3; // en passant update
+		for (int j = 0; j < 8; j++) {
+			if (newBoard->m_pieces[enPassantRow][j].pieceType == PieceType::EnPessantCapturablePawn)
+				newBoard->m_pieces[enPassantRow][j].pieceType = PieceType::Pawn;
+		}
+		return newBoard;
 	}
+
+
+
+	// only valid moves which doesnt put King in check-mate position
+	// For castling, we examine all check conditions here
 	std::map<Move, IBoard::Ptr> BoardImpl::getPossibleMoves() const
 	{
-		throw std::runtime_error("Not yet implemented.");
+		std::vector<Move> allMoves = this->getAllmovesWithoutObstructions();
+		std::map<Move, IBoard::Ptr> movesMap;
+
+		for (const Move& m : allMoves) {
+			std::optional<IBoard::Ptr> newBoard = this->updateBoard(m);
+			if (newBoard.has_value()) {
+				if (newBoard.value()->isCheckMate())
+					continue;
+				if (this->m_pieces[m.sourceRank][m.sourceFile].pieceType == PieceType::King &&
+					abs(m.destinationFile - m.sourceFile) == 2
+					) {
+					int castledir = (m.sourceFile - m.destinationFile) / 2;
+					if (this->isCheckMate(-1,-1,false) ||
+						this->isCheckMate(m.sourceRank, m.sourceFile + castledir, false)
+						)
+						continue;
+				}
+				movesMap[m] = newBoard.value();
+
+			}
+		}
+		return movesMap;
 	}
 
 	IBoard::Ptr BoardImpl::getStartingBoard()
@@ -277,8 +429,8 @@ namespace space {
 		return board;
 	}
   
-	// In this we check for obstructions
-	bool BoardImpl::checkObstructions(Move m)
+	// In this we check for obstructions, returns true if no obstructions
+	bool BoardImpl::checkObstructions(Move m) const
 	{
 		// pawns are examined elsewhere
 		// for all other cases, we examine for target cell occupied by same color
@@ -324,20 +476,44 @@ namespace space {
 		return true;
 	}
 
-	std::map<Move, IBoard::Ptr> BoardImpl::getAllmoves() const
+
+	std::vector<Move> BoardImpl::getAllmoves(bool current = true) const
 	{
-		return std::map<Move, Ptr>(); // TODO
+		std::vector<Move> allMoves;
+
+		for(int i = 0; i < 8; i++)
+			for (int j = 0; j < 8; j++) {
+				std::vector<Move> moves = this->getAllmoves(i, j, current);
+				allMoves.insert(allMoves.end(), moves.begin(), moves.end());
+			}
+		return allMoves;
 	}
 
-	std::map<Move, IBoard::Ptr> BoardImpl::getAllmoves(int rank, int file) const
+	std::vector<Move> BoardImpl::getAllmovesWithoutObstructions(bool current = true) const
+	{
+		std::vector<Move> allMoves = this->getAllmoves(current);
+		std::vector<Move> goodMoves;
+		for (const Move& m : allMoves) {
+			if (this->checkObstructions(m)) {
+				goodMoves.push_back(m);
+			}
+		}
+		return goodMoves;
+	}
+	
+
+
+	std::vector<Move> BoardImpl::getAllmoves(int rank, int file, bool current = true) const
 	{
 		Piece p = this->m_pieces[rank][file];
 		PieceType t = p.pieceType;
 		Color c = p.color;
 		std::vector<Move> moves;
 
-		if (t == PieceType::None || c != this->m_whoPlaysNext) {
-			return std::map<Move, Ptr>();
+		Color moveColor = getColor(current);
+
+		if (t == PieceType::None || c != moveColor) {
+			return std::vector<Move>();
 		}
 
 		if (t == PieceType::King) {
@@ -391,9 +567,6 @@ namespace space {
 				}
 			}
 		}
-
-		// TODO: Examine for obstructions
-
 
 		// for pawns, we examine for obstruction and capture rules here
 		if (t == PieceType::Pawn)
@@ -463,11 +636,8 @@ namespace space {
 			moves.push_back({ rank, file, rank, file + 2 * direction });
 		}
 
-		// Examine for checkmate ??
-
-		// Get corresponding resulting boards
-
-		return std::map<Move, Ptr>();
+		return moves;
 	}
 
+	
 }

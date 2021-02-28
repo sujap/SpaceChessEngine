@@ -6,7 +6,7 @@
 
 namespace space {
 	enum class Color { White, Black };
-	enum class PieceType { Pawn, EnPessantCapturablePawn, Rook, Knight, Bishop, Queen, King, None };
+	enum class PieceType { Pawn, EnPassantCapturablePawn, Rook, Knight, Bishop, Queen, King, None };
 	struct Position {
 		int rank;
 		int file;
@@ -17,7 +17,8 @@ namespace space {
 		int sourceFile;
 		int destinationRank;
 		int destinationFile;
-		PieceType promotedPiece = PieceType::None; // for pawn Promotion only
+		PieceType promotedPiece; // for pawn Promotion only
+		bool operator <(const Move& m) const;
 	};
 	struct Piece {
 		PieceType pieceType;
@@ -26,6 +27,7 @@ namespace space {
 	class IBoard {
 	public:
 		using Ptr = std::shared_ptr<IBoard>;
+		using MoveMap = std::map<Move, Ptr>;
 		using uint = std::size_t;
 		virtual Color whoPlaysNext() const = 0;
 		virtual std::optional<Piece> getPiece(Position position) const = 0;
@@ -37,7 +39,7 @@ namespace space {
 		virtual bool isStaleMate() const = 0;
 		virtual bool isCheckMate() const = 0;
 		virtual std::optional<Ptr> updateBoard(Move move) const = 0;
-		virtual std::map<Move, Ptr> getPossibleMoves() const = 0;
+		virtual MoveMap getValidMoves() const = 0;
 	};
 
 }

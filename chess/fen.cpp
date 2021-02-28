@@ -14,7 +14,7 @@ namespace {
 		case space::PieceType::Pawn:
 			result = 'P';
 			break;
-		case space::PieceType::EnPessantCapturablePawn:
+		case space::PieceType::EnPassantCapturablePawn:
 			result = 'P';
 			break;
 		case space::PieceType::Rook:
@@ -69,7 +69,7 @@ namespace space {
 					auto piece = *optPiece;
 					result << pieceToChar(piece);
 
-					if (piece.pieceType == PieceType::EnPessantCapturablePawn)
+					if (piece.pieceType == PieceType::EnPassantCapturablePawn)
 					{
 						enPessantPosition = pos;
 						if (piece.color == Color::Black)

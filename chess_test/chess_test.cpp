@@ -11,4 +11,5 @@ TEST(BoardSuite, StartingBoardTest) {
 	std::string expectedStartingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 	ASSERT_EQ(startingFen.fen, expectedStartingFen);
 	ASSERT_EQ(Fen::fromBoard(BoardImpl::fromFen(startingFen), 0, 1).fen, expectedStartingFen);
+	ASSERT_EQ(expectedStartingFen.size(), 4);
 }

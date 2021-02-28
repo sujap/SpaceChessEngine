@@ -19,7 +19,7 @@ namespace space {
 		bool isStaleMate() const override;
 		bool isCheckMate() const override;
 		std::optional<Ptr> updateBoard(Move move) const override;
-		std::map<Move, Ptr> getPossibleMoves() const override;
+		MoveMap getValidMoves() const override;
 
 		static Ptr getStartingBoard();
 		static Ptr fromFen(const Fen& fen);
@@ -32,10 +32,10 @@ namespace space {
 		bool m_canBlackCastleRight;
 		Color m_whoPlaysNext;
 		bool checkObstructions(Move m) const;
-		bool isCheckMate(int rank, int file, bool current = true) const;
-		std::vector<Move> getAllmoves(bool current = true) const;
-		std::vector<Move> getAllmoves(int rank, int file, bool current = true) const;
-		std::vector<Move> getAllmovesWithoutObstructions(bool current = true) const;
+		bool isUnderCheck(Color color, std::optional<Position> targetKingPosition = std::nullopt) const;
+		std::vector<Move> getAllMoves(Color color) const;
+		std::vector<Move> getAllMoves(Position position) const;
+		std::vector<Move> getAllmovesWithoutObstructions(Color color) const;
 		inline bool inRange(int x) const { return (x >= 0) && (x < 8); }
 		Color getColor(bool current = true) const;
 	};

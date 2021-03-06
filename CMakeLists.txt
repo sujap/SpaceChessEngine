@@ -51,5 +51,6 @@ project ("SpaceChessEngine")
 add_subdirectory ("SpaceChessEngine")
 
 add_subdirectory ("chess")
+add_subdirectory ("game")
 add_subdirectory ("chess_test")
 

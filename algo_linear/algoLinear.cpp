@@ -11,7 +11,7 @@ namespace space {
 
 	AlgoLinearDepthOne::AlgoLinearDepthOne(std::vector<double> wtsVec)
 	{
-		assert(wtsVec.size() == 5,
+		space_assert(wtsVec.size() == 5,
 			"Need 5 weights for algo");
 		this->weights[PieceType::Pawn] = wtsVec[0];
 		this->weights[PieceType::EnPassantCapturablePawn] = wtsVec[0];
@@ -56,8 +56,8 @@ namespace space {
 
 	AlgoLinearDepthTwoExt::AlgoLinearDepthTwoExt(int _breadth, std::vector<double> wtsVec)
 	{
-		assert(breadth > 0, "Breadth must be positive");
-		assert(wtsVec.size() == 5, "Need 6 weights");
+		space_assert(breadth > 0, "Breadth must be positive");
+		space_assert(wtsVec.size() == 5, "Need 6 weights");
 		this->breadth = _breadth;
 		this->weights[PieceType::Pawn] = wtsVec[0];
 		this->weights[PieceType::EnPassantCapturablePawn] = wtsVec[0];

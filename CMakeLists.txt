@@ -52,4 +52,6 @@ add_subdirectory ("SpaceChessEngine")
 
 add_subdirectory ("chess")
 add_subdirectory ("chess_test")
+add_subdirectory ("common")
+add_subdirectory("algo_linear")
 

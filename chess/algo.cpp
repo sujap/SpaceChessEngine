@@ -1,18 +1,16 @@
 #include "algo.h"
 
+#include "common/base.h"
+
+
+#include <algorithm>
+
+
+
 
 namespace space {
 
-	IBoard::Ptr IGame::makeNextMove(Move move)
-	{
-		return IBoard::Ptr();  // TODO
-	}
-
-	Move IGame::getNextMove()
-	{
-		return Move();   // TODO
-	}
-
+	
 
 }
 

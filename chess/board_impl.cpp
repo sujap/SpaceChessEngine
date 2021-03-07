@@ -197,9 +197,9 @@ namespace space {
 							newBoard->m_canWhiteCastleRight = false;
 					}
 				}
-				assert(!newBoard->m_canWhiteCastleLeft || newBoard->m_pieces[0][0].pieceType == PieceType::Rook,
+				space_assert(!newBoard->m_canWhiteCastleLeft || newBoard->m_pieces[0][0].pieceType == PieceType::Rook,
 					   "White Left Rook moved, cant castle");
-				assert(!newBoard->m_canWhiteCastleRight || newBoard->m_pieces[0][7].pieceType == PieceType::Rook,
+				space_assert(!newBoard->m_canWhiteCastleRight || newBoard->m_pieces[0][7].pieceType == PieceType::Rook,
 					"White Right Rook moved, cant castle");
 				break;
 			case Color::Black:
@@ -213,9 +213,9 @@ namespace space {
 							newBoard->m_canBlackCastleRight = false;
 					}
 				}
-				assert(!newBoard->m_canBlackCastleLeft || newBoard->m_pieces[7][7].pieceType == PieceType::Rook,
+				space_assert(!newBoard->m_canBlackCastleLeft || newBoard->m_pieces[7][7].pieceType == PieceType::Rook,
 					"Black Left Rook moved, cant castle");
-				assert(!newBoard->m_canBlackCastleRight || newBoard->m_pieces[7][0].pieceType == PieceType::Rook,
+				space_assert(!newBoard->m_canBlackCastleRight || newBoard->m_pieces[7][0].pieceType == PieceType::Rook,
 					"Black Right Rook moved, cant castle");
 		}
 
@@ -226,7 +226,7 @@ namespace space {
 			if (fileChange == 2 || fileChange == -2) {    // castling
 				int rookFile = (fileChange > 0 ? 7 : 0);
 				Piece pRook = this->m_pieces[move.sourceRank][rookFile];
-				assert(pRook.pieceType == PieceType::Rook && 
+				space_assert(pRook.pieceType == PieceType::Rook && 
 						pRook.color == pSource.color,
 					"Rook Not found for castling");
 
@@ -237,11 +237,11 @@ namespace space {
 			break;
 
 		case PieceType::Pawn:
-			assert(abs(fileChange) <= 1,
+			space_assert(abs(fileChange) <= 1,
 				"Pawn move too far");
 
 			if (move.destinationRank == 0 || move.destinationRank == 7) {  // promotion
-				assert((move.destinationRank == 0) == (pSource.color == Color::Black),
+				space_assert((move.destinationRank == 0) == (pSource.color == Color::Black),
 					"Pawn on back row");
 				pTargetNew.pieceType = move.promotedPiece; 
 			}
@@ -249,7 +249,7 @@ namespace space {
 			switch (pSource.color){
 			case Color::White:
 				if (move.sourceRank == 1 && move.destinationRank == 3) {  // double move
-					assert(this->m_pieces[2][move.sourceFile].pieceType == PieceType::None,
+					space_assert(this->m_pieces[2][move.sourceFile].pieceType == PieceType::None,
 						"White Pawn double move blocked");
 					pTargetNew.pieceType = PieceType::EnPassantCapturablePawn;
 				}
@@ -262,7 +262,7 @@ namespace space {
 				break;
 			case Color::Black:
 				if (move.sourceRank == 6 && move.destinationRank == 4) {  // double move
-					assert(this->m_pieces[5][move.sourceFile].pieceType == PieceType::None,
+					space_assert(this->m_pieces[5][move.sourceFile].pieceType == PieceType::None,
 						"Black Pawn double move blocked");
 					pTargetNew.pieceType = PieceType::EnPassantCapturablePawn;
 				}
@@ -497,7 +497,7 @@ namespace space {
 		// path obstruction calculation
 		if (pType == PieceType::Rook || pType == PieceType::Bishop || pType == PieceType::Queen) 
 		{
-			assert(deltax == 0 || deltay == 0 || abs(deltax) == abs(deltay),
+			space_assert(deltax == 0 || deltay == 0 || abs(deltax) == abs(deltay),
 				"invalide long  move");
 
 			int delta = std::max(abs(deltax), abs(deltay));
@@ -516,7 +516,7 @@ namespace space {
 		}
 		// castling obstruction check
 		else if(pType == PieceType::King && abs(deltax) == 2) {
-			assert(deltay == 0,
+			space_assert(deltay == 0,
 				"King moving too far");
 			int direction = deltax / 2;
 			int rookDistance = deltax < 0 ? 4 : 3;

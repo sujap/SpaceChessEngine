@@ -7,7 +7,7 @@
 
 namespace space {
 
-	void assert(bool expr, std::string message) {
+	void space_assert(bool expr, std::string message) {
 		if (!expr)
 			throw std::runtime_error("Assertion Failure: " + message);
 	}

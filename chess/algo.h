@@ -27,6 +27,7 @@ namespace space {
     class IAlgo {
     public:
         using Ptr = std::shared_ptr<IAlgo>;
+        virtual ~IAlgo() noexcept {}
         virtual Move getNextMove(IBoard::Ptr board) = 0;
     };
 
@@ -42,6 +43,8 @@ namespace space {
 
     class IGame {
     public:
+        virtual ~IGame() noexcept {}
+
         using MoveList = std::vector<Move>;
 
         virtual IAlgo::Ptr getBlackAlgo() const = 0;

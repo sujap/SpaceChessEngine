@@ -66,10 +66,10 @@ namespace {
 
 	void printBoard(std::ostream& out, const space::IBoard& board)
 	{
-		out << "\n------------";
-		for (int rank = 0; rank < 8; ++rank)
+		out << "\n------------\n";
+		for (int rank = 7; rank >= 0; --rank)
 		{
-			out << (8 - rank) << "  ";
+			out << (rank + 1) << "  ";
 			for (int file = 0; file < 8; ++file)
 			{
 				auto piece = board.getPiece({ rank, file });
@@ -83,7 +83,7 @@ namespace {
 		out << "   ";
 		for (int file = 0; file < 8; ++file)
 		{
-			out << 'a' + file << "  ";
+			out << static_cast<char>('a' + file) << "  ";
 		}
 		out << "\n\n";
 	}
@@ -96,6 +96,7 @@ int main() {
 	bool recursiveError = false;
 	while (true)
 	{
+		printBoard(std::cout, *board);
 		auto algo = blackAlgo;
 		if (board->whoPlaysNext() == space::Color::White)
 			algo = whiteAlgo;

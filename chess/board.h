@@ -18,6 +18,10 @@ namespace space {
 		int destinationRank;
 		int destinationFile;
 		PieceType promotedPiece; // for pawn Promotion only
+		Move() {}
+		Move(int v_sourceRank, int v_sourceFile, int v_destinationRank, int v_destinationFile, PieceType v_promotedPiece = PieceType::None) :
+			sourceRank(v_sourceRank), sourceFile(v_sourceFile), destinationRank(v_destinationRank), destinationFile(v_destinationFile), promotedPiece(v_promotedPiece)
+		{}
 		bool operator <(const Move& m) const;
 	};
 	struct Piece {

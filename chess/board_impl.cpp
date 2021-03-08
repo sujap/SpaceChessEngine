@@ -47,29 +47,18 @@ namespace space {
 
 	// STRUCT Move
 
-	std::map<PieceType, char> pieceTypeMap = { 
-		{PieceType::Pawn,	'p'},
-		{PieceType::EnPassantCapturablePawn,'p'},
-		{PieceType::Bishop,	'b'},
-		{PieceType::Rook,	'r'},
-		{PieceType::Knight,	'n'},
-		{PieceType::Queen,	'q'},
-		{PieceType::King,	'k'},
-		{PieceType::None,	'o'}
-	};
-
-	bool Move::operator<(Move const& m) const
+	bool Move::operator<(Move const& that) const
 	{
-		int diff =  this->sourceRank - m.sourceRank;
+		int diff =  this->sourceRank - that.sourceRank;
 
 		if (diff == 0) {
-			diff = this->sourceFile - m.sourceFile;
+			diff = this->sourceFile - that.sourceFile;
 			if (diff == 0) {
-				diff = this->destinationRank - m.destinationRank;
+				diff = this->destinationRank - that.destinationRank;
 				if (diff == 0) {
-					diff = this->destinationFile - m.destinationFile;
+					diff = this->destinationFile - that.destinationFile;
 					if (diff == 0) {
-						diff = pieceTypeMap[this->promotedPiece] - pieceTypeMap[m.promotedPiece];
+						diff = static_cast<int>(this->promotedPiece) - static_cast<int>(that.promotedPiece);
 					}
 				}
 			}

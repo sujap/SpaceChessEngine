@@ -1,5 +1,7 @@
 #include "algoLinear.h"
 
+#include <common/base.h>
+
 #include <vector>
 #include <stdexcept>
 #include <string>
@@ -9,7 +11,7 @@ namespace space {
 
 	
 
-	AlgoLinearDepthOne::AlgoLinearDepthOne(std::vector<double> wtsVec)
+	AlgoLinearDepthOne::AlgoLinearDepthOne(const std::vector<double> wtsVec)
 	{
 		space_assert(wtsVec.size() == 5,
 			"Need 5 weights for algo");
@@ -23,15 +25,27 @@ namespace space {
 
 	Move AlgoLinearDepthOne::getNextMove(IBoard::Ptr board)
 	{
+		 
 		IBoard::MoveMap moveMap = board->getValidMoves();
+
+		if (moveMap.size() == 0) {
+			return Move();
+		}
+
 		bool high = board->whoPlaysNext() == Color::White;
 		std::map<Move, Score> allScores;
 		for (const auto& mb : moveMap) {
 			allScores[mb.first] = this->getScore(mb.second);
 		}
-		Move bestMove = get_best(allScores, high);
 
-		return bestMove; 
+		auto cmp = [high](const ScorePair& p1, const ScorePair& p2) {
+			return (high ? p1.second < p2.second : p1.second > p1.second);
+		};
+
+		auto best = *std::max_element(allScores.begin(), allScores.end(), cmp);
+
+		return best.first;
+
 	}
 
 	AlgoLinearDepthOne::Score AlgoLinearDepthOne::getScore(IBoard::Ptr board)
@@ -54,10 +68,10 @@ namespace space {
 // Depth Two algos
 
 
-	AlgoLinearDepthTwoExt::AlgoLinearDepthTwoExt(int _breadth, std::vector<double> wtsVec)
+	AlgoLinearDepthTwoExt::AlgoLinearDepthTwoExt(std::size_t _breadth, const std::vector<double> wtsVec)
 	{
-		space_assert(breadth > 0, "Breadth must be positive");
-		space_assert(wtsVec.size() == 5, "Need 6 weights");
+		space_assert(_breadth > 0, "Breadth must be positive");
+		space_assert(wtsVec.size() == 5, "Need 5 weights");
 		this->breadth = _breadth;
 		this->weights[PieceType::Pawn] = wtsVec[0];
 		this->weights[PieceType::EnPassantCapturablePawn] = wtsVec[0];
@@ -109,7 +123,7 @@ namespace space {
 		int direction = board->whoPlaysNext() == Color::White ? 1 : -1;
 
 		auto cmp = [direction](const ScoreTriple& a, const ScoreTriple& b) {
-			return direction * (std::get<2>(a) < std::get<2>(b)) < 0;
+			return direction * (std::get<2>(a) - std::get<2>(b)) < 0;
 		};
 
 		ScoreTriple best = *std::max_element(allScores.begin(),
@@ -124,16 +138,20 @@ namespace space {
 	Move AlgoLinearDepthTwoExt::getNextMove(IBoard::Ptr board)
 	{
 		std::vector<ScoreTriple> allScores = this->getAllScores(board);
+
+		if (allScores.size() == 0) {
+			return Move();
+		}
+
 		int direction = board->whoPlaysNext() == Color::White ? 1 : -1;
 
 		auto cmp = [direction](const ScoreTriple& a, const ScoreTriple& b) {
-			return direction * (std::get<2>(a) < std::get<2>(b)) < 0;
-		};
+			return direction * (std::get<2>(a) - std::get<2>(b)) > 0;
+		}; // a better than b
 
 
-		std::sort(allScores.begin(), allScores.end(), cmp);
-		allScores.resize(this->breadth);
-
+		std::sort(allScores.begin(), allScores.end(), cmp); // better moves first
+		allScores.resize(std::min(allScores.size(), this->breadth));
 
 		std::map<Move, Score> allScores2;
 		for (const auto& v : allScores) {
@@ -141,9 +159,13 @@ namespace space {
 			allScores2[std::get<0>(v)] = std::get<1>(bestDepth2);
 		}
 
-		Move bestMove = get_best(allScores2, direction == -1);
+		auto cmp2 = [direction](const ScorePair& p1, const ScorePair& p2) {
+			return direction * (p1.second - p2.second) < 0;
+		};// <
 
-		return bestMove;
+		auto best = *std::max_element(allScores2.begin(), allScores2.end(), cmp2);
+
+		return best.first;
 
 	}
 

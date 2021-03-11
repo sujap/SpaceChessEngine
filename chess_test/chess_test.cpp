@@ -87,6 +87,13 @@ TEST(BoardSuite, BoardMovesTest) {
 	auto bd = arabian->getValidMoves();
 	ASSERT_GT(bd.size(), 0);
 
+	auto bd2 = Fen::moves2string(arabian, bd);
+
+	ASSERT_GT(bd2.size(), 0);
+//	Fen::moves2string(arabian, bd);
+
+
+
 }
 
 
@@ -94,10 +101,23 @@ TEST(AlgoSuite, AlgoLinearTest) {
 	std::vector<double> wts01 = {1, 5, 4, 4, 10};
 	using namespace space;
 
-//	auto ca = AlgoLinearDepthOne(wts01);
+	Fen boardfen = Fen::Fen("8/8/2kq1r2/8/2KBNR2/8/8/8 b - - 0 0");
+	auto b0 = BoardImpl::fromFen(boardfen);
 
-//	ASSERT_NO_THROW(ca);
+    //auto aa = AlgoLinearDepthOne(wts01);
+	auto aa = AlgoLinearDepthTwoExt(5, wts01);
 
+	Move m0 = aa.getNextMove(b0);
+
+	auto b1 = b0->updateBoard(m0);
+
+	ASSERT_TRUE(b1.has_value());
+
+	Move m1 = aa.getNextMove(b1.value());
+
+	auto b2 = b1.value()->updateBoard(m1);
+
+	ASSERT_TRUE(b2.has_value());
 
 
 }

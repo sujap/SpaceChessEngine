@@ -101,7 +101,7 @@ TEST(AlgoSuite, AlgoLinearTest) {
 	std::vector<double> wts01 = {1, 5, 4, 4, 10};
 	using namespace space;
 
-	Fen boardfen = Fen::Fen("8/8/2kq1r2/8/2KBNR2/8/8/8 b - - 0 0");
+	Fen boardfen = Fen("8/8/2kq1r2/8/2KBNR2/8/8/8 b - - 0 0");
 	auto b0 = BoardImpl::fromFen(boardfen);
 
     //auto aa = AlgoLinearDepthOne(wts01);

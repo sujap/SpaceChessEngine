@@ -1,6 +1,7 @@
 #include "CliAlgo.h"
 
 #include <string>
+#include <chess/algo_factory.h>
 
 namespace {
 	inline bool isPawnPromotion(const space::Move & move, const space::IBoard & board) {
@@ -118,10 +119,52 @@ namespace {
 			result[4] = pieceTypeToChar(move.promotedPiece);
 		return result;
 	}
+
+
+	std::istream& initializeInputStream(const nlohmann::json& config, std::ifstream& fin)
+	{
+		std::string inputFile = config.value(space::CliAlgo::getInputFileField(), "stdin");
+		if (inputFile == "stdin")
+			return std::cin;
+		else
+		{
+			fin.open(inputFile);
+			return fin;
+		}
+	}
+
+	std::ostream& initializeOutputStream(const nlohmann::json& config, std::ofstream& fout)
+	{
+		std::string outputFile = config.value(space::CliAlgo::getOutputFileField(), "stdout");
+		if (outputFile == "stdout")
+			return std::cout;
+		else
+		{
+			fout.open(outputFile);
+			return fout;
+		}
+	}
 }
 
 
 namespace space{
+
+	CliAlgo::CliAlgo(std::istream& inputStream, std::ostream& outputStream) :
+		m_fileInput(),
+		m_fileOutput(),
+		m_inputStream(inputStream),
+		m_outputStream(outputStream)
+	{ }
+
+	CliAlgo::CliAlgo(const nlohmann::json& config) :
+		m_fileInput(),
+		m_fileOutput(),
+		m_inputStream(initializeInputStream(config, m_fileInput)),
+		m_outputStream(initializeOutputStream(config, m_fileOutput))
+	{
+		auto inputStream = config["inputStream"];
+	}
+
 	Move CliAlgo::getNextMove(IBoard::Ptr board) {
 		auto validMoves = board->getValidMoves();
 		Move result;
@@ -147,4 +190,10 @@ namespace space{
 		} while (validMoves.count(result) == 0);
 		return result;
 	}
+
+	std::string CliAlgo::getAlgoName() { return "CliAlgo"; }
+	std::string CliAlgo::getInputFileField() { return "InputFile"; }
+	std::string CliAlgo::getOutputFileField() { return "OutputFile"; }
+	bool CliAlgo::s_algoMachineRegistration = AlgoFactory::registerAlgoMachine(CliAlgo::getAlgoName(), CliAlgo::createFromConfig);
+
 }

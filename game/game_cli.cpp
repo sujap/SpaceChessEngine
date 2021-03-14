@@ -1,7 +1,11 @@
 #include <iostream>
 #include <string>
+#include <vector>
+
 #include <chess/board.h>
 #include <chess/board_impl.h>
+#include <algo_linear/algoLinear.h>
+
 #include "CliAlgo.h"
 
 namespace {
@@ -92,14 +96,15 @@ namespace {
 int main() {
 	auto board = space::BoardImpl::getStartingBoard();
 	auto whiteAlgo = space::CliAlgo::create(std::cin, std::cout);
-	auto blackAlgo = space::CliAlgo::create(std::cin, std::cout);
+	// auto blackAlgo = space::CliAlgo::create(std::cin, std::cout);
+	std::vector<double> wts = { 1, 5, 4, 4, 12 };
+	auto blackAlgo = space::AlgoLinearDepthTwoExt(4, wts);
+
 	bool recursiveError = false;
 	while (true)
 	{
 		printBoard(std::cout, *board);
-		auto algo = blackAlgo;
-		if (board->whoPlaysNext() == space::Color::White)
-			algo = whiteAlgo;
+		// auto algo = board->whoPlaysNext() == space::Color::White ? whiteAlgo : blackAlgo;
 
 		try {
 
@@ -118,7 +123,9 @@ int main() {
 				return 0;
 			}
 
-			auto nextMove = algo->getNextMove(board);
+			auto nextMove = board->whoPlaysNext() == space::Color::White ? 
+										whiteAlgo->getNextMove(board) : 
+										blackAlgo.getNextMove(board);
 			auto validMoves = board->getValidMoves();
 			auto validMoveIt = validMoves.find(nextMove);
 			if (validMoveIt == validMoves.cend())

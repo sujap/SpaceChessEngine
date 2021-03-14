@@ -26,8 +26,9 @@ namespace space {
 
 		static std::vector<std::string> moves2string(const IBoard::Ptr& board, IBoard::MoveMap mv);
 
-	private:
 		static std::string moveStr(const IBoard::Ptr& board, Move m);
+
+	private:
 
 	};
 }

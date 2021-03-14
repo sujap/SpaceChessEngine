@@ -2,6 +2,7 @@
 
 #include <common/base.h>
 
+#include <iostream>
 #include <vector>
 #include <stdexcept>
 #include <string>
@@ -44,7 +45,10 @@ namespace space {
 
 		auto best = *std::max_element(allScores.begin(), allScores.end(), cmp);
 
-		return best.first;
+		Move bestMove = best.first;
+		std::cout << "Move-> " << Fen::moveStr(board, bestMove) << " by AlgoLinearDepthOne" << std::endl;
+
+		return bestMove;
 
 	}
 
@@ -165,7 +169,10 @@ namespace space {
 
 		auto best = *std::max_element(allScores2.begin(), allScores2.end(), cmp2);
 
-		return best.first;
+		Move bestMove = best.first;
+		std::cout << "Move-> " << Fen::moveStr(board, bestMove) << " by AlgoLinearDepthTwoExt" << std::endl;
+
+		return bestMove;
 
 	}
 

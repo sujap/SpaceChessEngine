@@ -3,6 +3,7 @@
 
 #include "chess/board.h"
 #include "chess/algo.h"
+#include "chess/fen.h"
 
 #include "common/base.h"
 
@@ -30,7 +31,7 @@ namespace space {
 		using ScorePair = std::pair<Move, Score>;
 		using ScoreTriple = std::tuple<Move, IBoard::Ptr, Score>;
 
-		AlgoLinearDepthTwoExt(std::size_t breadth, const std::vector<double> wtsVec);
+		AlgoLinearDepthTwoExt(std::size_t _breadth, const std::vector<double> wtsVec);
 		Move getNextMove(IBoard::Ptr board) override;
 
 	protected:

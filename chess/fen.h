@@ -3,6 +3,7 @@
 #include "board.h"
 
 #include <string>
+#include <vector>
 
 /*
 > Each rank is described, starting with rank 8 and ending with rank 1
@@ -20,6 +21,14 @@ namespace space {
 		Fen(const std::string& v_fen) : fen(v_fen) {}
 
 		static Fen fromBoard(const IBoard::Ptr& board, int halfMoveClock, int fullMoves);
+
+		static std::vector<std::string> moves2string(const IBoard::Ptr& board, std::vector<Move> movesList);
+
+		static std::vector<std::string> moves2string(const IBoard::Ptr& board, IBoard::MoveMap mv);
+
+		static std::string moveStr(const IBoard::Ptr& board, Move m);
+
+	private:
 
 	};
 }

@@ -3,48 +3,6 @@
 #include <stdexcept>
 #include <sstream>
 
-namespace {
-
-	char pieceToChar(space::Piece piece)
-	{
-		char result;
-		// Pawn, EnPessantCapturablePawn, Rook, Knight, Bishop, Queen, King, None
-		switch (piece.pieceType)
-		{
-		case space::PieceType::Pawn:
-			result = 'P';
-			break;
-		case space::PieceType::EnPassantCapturablePawn:
-			result = 'P';
-			break;
-		case space::PieceType::Rook:
-			result = 'R';
-			break;
-		case space::PieceType::Knight:
-			result = 'N';
-			break;
-		case space::PieceType::Bishop:
-			result = 'B';
-			break;
-		case space::PieceType::Queen:
-			result = 'Q';
-			break;
-		case space::PieceType::King:
-			result = 'K';
-			break;
-		default:
-			throw std::runtime_error("Unpexpected piece type " + std::to_string(static_cast<int>(piece.pieceType)));
-		}
-		if (piece.color == space::Color::Black)
-			result = (result + ('a' - 'A'));
-		return result;
-	}
-
-} // end anonymous namespace
-
-
-
-
 namespace space {
 	Fen Fen::fromBoard(const IBoard::Ptr& board, int halfMoveClock, int fullMoves)
 	{
@@ -67,7 +25,7 @@ namespace space {
 						result << skip;
 					skip = 0;
 					auto piece = *optPiece;
-					result << pieceToChar(piece);
+					result << piece.toChar();
 
 					if (piece.pieceType == PieceType::EnPassantCapturablePawn)
 					{
@@ -139,14 +97,14 @@ namespace space {
 
 		auto num2char = [](int num) { return char('0' + num);  };
 
-		moveStr += pSource.has_value() ? pieceToChar(pSource.value()) : '-';
+		moveStr += pSource.has_value() ? pSource.value().toChar() : '-';
 
 		moveStr += num2char(m.sourceRank);
 		moveStr += num2char(m.sourceFile);
 		moveStr += num2char(m.destinationRank);
 		moveStr += num2char(m.destinationFile);
 
-		moveStr += pTarget.has_value() ? pieceToChar(pTarget.value()) : '-';
+		moveStr += pTarget.has_value() ? pTarget.value().toChar() : '-';
 		if (pSource.has_value()) {
 			switch (pSource.value().pieceType) {
 
@@ -160,7 +118,7 @@ namespace space {
 						&& m.sourceRank == 6 && m.destinationRank == 7) ||
 					(pSource.value().color == Color::Black
 						&& m.sourceRank == 1 && m.destinationRank == 0))
-					moveStr += pieceToChar({ m.promotedPiece , pSource.value().color });
+					moveStr += Piece( m.promotedPiece , pSource.value().color).toChar();
 				break;
 
 			default:

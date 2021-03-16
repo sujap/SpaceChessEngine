@@ -7,7 +7,7 @@
 
 /*
 > Each rank is described, starting with rank 8 and ending with rank 1
->		Algebraic notation with White pieces in uppercase, Black in lowercase
+>		Algebraic notation with White pieces in Uppercase, Black in lowercase
 > Active color
 > Castling availability
 > En passant target square or -

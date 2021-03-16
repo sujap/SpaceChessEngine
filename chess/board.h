@@ -3,15 +3,30 @@
 #include <memory>
 #include <optional>
 #include <map>
+#include <string>
 
 namespace space {
 	enum class Color { White, Black };
 	enum class PieceType { Pawn, EnPassantCapturablePawn, Rook, Knight, Bishop, Queen, King, None };
+
+	PieceType charToPieceType(char c);
+	char pieceTypeToChar(PieceType p);
+
+	struct Piece {
+		PieceType pieceType;
+		Color color;
+		Piece() {}
+		Piece(PieceType _p, Color _c) : pieceType(_p), color(_c) {}
+		Piece(char c);
+		char toChar();
+	};
+
 	struct Position {
 		int rank;
 		int file;
 		Position(int v_rank, int v_file) : rank(v_rank), file(v_file) {}
 	};
+
 	struct Move {
 		int sourceRank;
 		int sourceFile;
@@ -22,12 +37,12 @@ namespace space {
 		Move(int v_sourceRank, int v_sourceFile, int v_destinationRank, int v_destinationFile, PieceType v_promotedPiece = PieceType::None) :
 			sourceRank(v_sourceRank), sourceFile(v_sourceFile), destinationRank(v_destinationRank), destinationFile(v_destinationFile), promotedPiece(v_promotedPiece)
 		{}
+		Move(std::string s);
+
+		std::string toString();	
 		bool operator <(const Move& that) const;
 	};
-	struct Piece {
-		PieceType pieceType;
-		Color color;
-	};
+
 	class IBoard {
 	public:
 		using Ptr = std::shared_ptr<IBoard>;
@@ -44,5 +59,7 @@ namespace space {
 		virtual std::optional<Ptr> updateBoard(Move move) const = 0;
 		virtual MoveMap getValidMoves() const = 0;
 	};
+
+	std::string moveToString(Move m, IBoard::Ptr board);
 
 }

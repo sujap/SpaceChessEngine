@@ -22,39 +22,7 @@ namespace {
 			throw std::runtime_error("Unrecognized color value " + std::to_string(static_cast<int>(color)));
 		}
 	}
-
-	inline char pieceTypeToChar(space::PieceType pieceType)
-	{
-		switch (pieceType)
-		{
-		case space::PieceType::Pawn:
-			return 'p';
-		case space::PieceType::EnPassantCapturablePawn:
-			return 'p';
-		case space::PieceType::Rook:
-			return 'r';
-		case space::PieceType::Knight:
-			return 'n';
-		case space::PieceType::Bishop:
-			return 'b';
-		case space::PieceType::Queen:
-			return 'q';
-		case space::PieceType::King:
-			return 'k';
-		case space::PieceType::None:
-			throw std::runtime_error("Cannot convert piece type 'None' to text");
-		default:
-			throw std::runtime_error("pieceType " + std::to_string(static_cast<int>(pieceType)) + " not recognized.");
-		}
-	}
-
-	inline char pieceToChar(space::Piece piece) {
-
-		char result = pieceTypeToChar(piece.pieceType);
-		if (piece.color == space::Color::White)
-			result = result + 'A' - 'a';
-		return result;
-	}
+	
 
 	inline space::Color getOppositeColor(space::Color color) {
 		switch (color)
@@ -70,26 +38,25 @@ namespace {
 
 	void printBoard(std::ostream& out, const space::IBoard& board)
 	{
-		out << "\n------------\n";
+		out << "  |  a  b  c  d  e  f  g  h  |\n"
+			<< "--+--------------------------+--\n";
 		for (int rank = 7; rank >= 0; --rank)
 		{
-			out << (rank + 1) << "  ";
+			out << (rank + 1) << " |  ";
 			for (int file = 0; file < 8; ++file)
 			{
 				auto piece = board.getPiece({ rank, file });
 				if (piece.has_value())
-					out << pieceToChar(piece.value()) << "  ";
+					out << piece.value().toChar()    << "  ";
 				else
 					out << ".  ";
 			}
-			out << "\n\n";
+			out << "| " << (rank + 1) << "\n";
+			if (rank > 0)
+				out << "  |                          |  \n";
 		}
-		out << "   ";
-		for (int file = 0; file < 8; ++file)
-		{
-			out << static_cast<char>('a' + file) << "  ";
-		}
-		out << "\n\n";
+		out << "--+--------------------------+--\n"
+			<< "  |  a  b  c  d  e  f  g  h  |\n\n";
 	}
 }
 
@@ -98,13 +65,14 @@ int main() {
 	auto whiteAlgo = space::CliAlgo::create(std::cin, std::cout);
 	// auto blackAlgo = space::CliAlgo::create(std::cin, std::cout);
 	std::vector<double> wts = { 1, 5, 4, 4, 12 };
-	auto blackAlgo = space::AlgoLinearDepthTwoExt(4, wts);
+	auto bb = space::AlgoLinearDepthTwoExt(4, wts);
+	auto blackAlgo = std::make_shared< space::AlgoLinearDepthTwoExt>(bb);
 
 	bool recursiveError = false;
 	while (true)
 	{
 		printBoard(std::cout, *board);
-		// auto algo = board->whoPlaysNext() == space::Color::White ? whiteAlgo : blackAlgo;
+		 auto algo = board->whoPlaysNext() == space::Color::White ? whiteAlgo : blackAlgo;
 
 		try {
 
@@ -123,9 +91,7 @@ int main() {
 				return 0;
 			}
 
-			auto nextMove = board->whoPlaysNext() == space::Color::White ? 
-										whiteAlgo->getNextMove(board) : 
-										blackAlgo.getNextMove(board);
+			auto nextMove = algo->getNextMove(board);
 			auto validMoves = board->getValidMoves();
 			auto validMoveIt = validMoves.find(nextMove);
 			if (validMoveIt == validMoves.cend())

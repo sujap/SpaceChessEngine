@@ -3,6 +3,7 @@
 
 #include "chess/board.h"
 #include "chess/algo.h"
+#include "chess/fen.h"
 
 #include "common/base.h"
 
@@ -10,13 +11,12 @@
 #include <vector>
 
 namespace space {
-	int x;
-
 	
 	class AlgoLinearDepthOne: public IAlgo {
 	public:
 		using Score = double;
-		AlgoLinearDepthOne(std::vector<double> wtsVec);
+		using ScorePair = std::pair<Move, Score>;
+		AlgoLinearDepthOne(const std::vector<double> wtsVec);
 		Move getNextMove(IBoard::Ptr board) override;
 
 	protected:
@@ -31,17 +31,15 @@ namespace space {
 		using ScorePair = std::pair<Move, Score>;
 		using ScoreTriple = std::tuple<Move, IBoard::Ptr, Score>;
 
-		AlgoLinearDepthTwoExt(int breadth, std::vector<double> wtsVec);
+		AlgoLinearDepthTwoExt(std::size_t _breadth, const std::vector<double> wtsVec);
 		Move getNextMove(IBoard::Ptr board) override;
 
 	protected:
-		int breadth;
+		std::size_t breadth;
 		std::map<PieceType, double> weights;
 		Score getLinearScore(IBoard::Ptr board);
 		std::vector<ScoreTriple> getAllScores(IBoard::Ptr board);
 		ScorePair findBestLinearMove(IBoard::Ptr board);
-
-
 
 	};
 

@@ -22,7 +22,7 @@ namespace space {
 		Move(int v_sourceRank, int v_sourceFile, int v_destinationRank, int v_destinationFile, PieceType v_promotedPiece = PieceType::None) :
 			sourceRank(v_sourceRank), sourceFile(v_sourceFile), destinationRank(v_destinationRank), destinationFile(v_destinationFile), promotedPiece(v_promotedPiece)
 		{}
-		bool operator <(const Move& m) const;
+		bool operator <(const Move& that) const;
 	};
 	struct Piece {
 		PieceType pieceType;
@@ -32,7 +32,6 @@ namespace space {
 	public:
 		using Ptr = std::shared_ptr<IBoard>;
 		using MoveMap = std::map<Move, Ptr>;
-		using uint = std::size_t;
 		virtual Color whoPlaysNext() const = 0;
 		virtual std::optional<Piece> getPiece(Position position) const = 0;
 		

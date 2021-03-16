@@ -1,8 +1,12 @@
 #include <iostream>
 #include <string>
+#include <vector>
+
 #include <chess/board.h>
 #include <chess/board_impl.h>
 #include <chess/algo_factory.h>
+#include <algo_linear/algoLinear.h>
+
 #include "CliAlgo.h"
 
 namespace {
@@ -133,6 +137,7 @@ namespace {
 
 int main(int argc, char const * const * const argv) {
 	auto board = space::BoardImpl::getStartingBoard();
+  
 	nlohmann::json config = parseConfig(argc, argv);
 	auto whiteAlgo = 
 		config.contains(WhiteAlgoFieldName) 
@@ -142,13 +147,12 @@ int main(int argc, char const * const * const argv) {
 		config.contains(BlackAlgoFieldName)
 		? space::AlgoFactory::tryCreateAlgo(config[BlackAlgoFieldName]).value()
 		: space::CliAlgo::create(std::cin, std::cout);
+  
 	bool recursiveError = false;
 	while (true)
 	{
 		printBoard(std::cout, *board);
-		auto algo = blackAlgo;
-		if (board->whoPlaysNext() == space::Color::White)
-			algo = whiteAlgo;
+		// auto algo = board->whoPlaysNext() == space::Color::White ? whiteAlgo : blackAlgo;
 
 		try {
 
@@ -167,7 +171,9 @@ int main(int argc, char const * const * const argv) {
 				return 0;
 			}
 
-			auto nextMove = algo->getNextMove(board);
+			auto nextMove = board->whoPlaysNext() == space::Color::White ? 
+										whiteAlgo->getNextMove(board) : 
+										blackAlgo.getNextMove(board);
 			auto validMoves = board->getValidMoves();
 			auto validMoveIt = validMoves.find(nextMove);
 			if (validMoveIt == validMoves.cend())

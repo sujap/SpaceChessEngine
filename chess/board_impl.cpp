@@ -36,8 +36,6 @@ namespace {
 			throw std::runtime_error(std::string("Unrecognizable piece type '") + c + "'");
 		}
 	}
-	
-
 
 } // end anonymous namespace
 
@@ -94,7 +92,7 @@ namespace space {
 
 	// Castling conditions:
 	// King & Rook not moved -- examined here using booleans, updated in updateBoard
-	// No piece in between -- examined here directly
+	// No piece in between -- examined in checkObstructions
 	// No check in 3 cells // examined in getPossibleMoves
 
 	bool BoardImpl::canCastleLeft(Color color) const
@@ -148,7 +146,7 @@ namespace space {
 		return false;
 	}
 
-
+	
 	std::optional<IBoard::Ptr> BoardImpl::updateBoard(Move move) const
 	{
 		std::shared_ptr<BoardImpl> newBoard = std::make_shared<BoardImpl>();

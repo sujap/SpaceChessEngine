@@ -4,6 +4,7 @@
 
 #include <chess/board.h>
 #include <chess/board_impl.h>
+
 #include <chess/algo_factory.h>
 #include <algo_linear/algoLinear.h>
 
@@ -137,7 +138,6 @@ namespace {
 
 int main(int argc, char const * const * const argv) {
 	auto board = space::BoardImpl::getStartingBoard();
-  
 	nlohmann::json config = parseConfig(argc, argv);
 	auto whiteAlgo = 
 		config.contains(WhiteAlgoFieldName) 
@@ -147,12 +147,12 @@ int main(int argc, char const * const * const argv) {
 		config.contains(BlackAlgoFieldName)
 		? space::AlgoFactory::tryCreateAlgo(config[BlackAlgoFieldName]).value()
 		: space::CliAlgo::create(std::cin, std::cout);
-  
+
 	bool recursiveError = false;
 	while (true)
 	{
 		printBoard(std::cout, *board);
-		 auto algo = board->whoPlaysNext() == space::Color::White ? whiteAlgo : blackAlgo;
+		auto algo = board->whoPlaysNext() == space::Color::White ? whiteAlgo : blackAlgo;
 
 		try {
 

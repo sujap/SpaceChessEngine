@@ -59,10 +59,10 @@ namespace space {
 
 	Piece::Piece(char c) {
 		this->pieceType = charToPieceType(c);
-		if (c >= 'a' && c <= 'z') {
+		if (c >= 'A' && c <= 'Z') {
 			this->color = Color::White;
 		}
-		else if (c >= 'A' && c <= 'Z') {
+		else if (c >= 'a' && c <= 'z') {
 			this->color = Color::Black;
 		}
 		else {

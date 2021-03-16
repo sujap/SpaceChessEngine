@@ -170,7 +170,7 @@ int main(int argc, char const * const * const argv) {
 				return 0;
 			}
 
-			auto nextMove = algo.getNextMove(board);
+			auto nextMove = algo->getNextMove(board);
 			auto validMoves = board->getValidMoves();
 			auto validMoveIt = validMoves.find(nextMove);
 			if (validMoveIt == validMoves.cend())

@@ -28,39 +28,7 @@ namespace {
 			throw std::runtime_error("Unrecognized color value " + std::to_string(static_cast<int>(color)));
 		}
 	}
-
-	inline char pieceTypeToChar(space::PieceType pieceType)
-	{
-		switch (pieceType)
-		{
-		case space::PieceType::Pawn:
-			return 'p';
-		case space::PieceType::EnPassantCapturablePawn:
-			return 'p';
-		case space::PieceType::Rook:
-			return 'r';
-		case space::PieceType::Knight:
-			return 'n';
-		case space::PieceType::Bishop:
-			return 'b';
-		case space::PieceType::Queen:
-			return 'q';
-		case space::PieceType::King:
-			return 'k';
-		case space::PieceType::None:
-			throw std::runtime_error("Cannot convert piece type 'None' to text");
-		default:
-			throw std::runtime_error("pieceType " + std::to_string(static_cast<int>(pieceType)) + " not recognized.");
-		}
-	}
-
-	inline char pieceToChar(space::Piece piece) {
-
-		char result = pieceTypeToChar(piece.pieceType);
-		if (piece.color == space::Color::White)
-			result = result + 'A' - 'a';
-		return result;
-	}
+	
 
 	inline space::Color getOppositeColor(space::Color color) {
 		switch (color)
@@ -86,7 +54,7 @@ namespace {
 			{
 				auto piece = board.getPiece({ rank, file });
 				if (piece.has_value())
-					out << pieceToChar(piece.value()) << "  ";
+					out << piece.value().toChar()    << "  ";
 				else
 					out << ".  ";
 			}
@@ -138,6 +106,7 @@ namespace {
 
 int main(int argc, char const * const * const argv) {
 	auto board = space::BoardImpl::getStartingBoard();
+
 	nlohmann::json config = parseConfig(argc, argv);
 	auto whiteAlgo = 
 		config.contains(WhiteAlgoFieldName) 
@@ -147,13 +116,11 @@ int main(int argc, char const * const * const argv) {
 		config.contains(BlackAlgoFieldName)
 		? space::AlgoFactory::tryCreateAlgo(config[BlackAlgoFieldName]).value()
 		: space::CliAlgo::create(std::cin, std::cout);
-
 	bool recursiveError = false;
 	while (true)
 	{
 		printBoard(std::cout, *board);
 		auto algo = board->whoPlaysNext() == space::Color::White ? whiteAlgo : blackAlgo;
-
 		try {
 
 			if (board->isCheckMate()) {

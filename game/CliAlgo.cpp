@@ -39,13 +39,13 @@ namespace {
 		case 'b':
 			return PieceType::Bishop;
 		default:
-			throw std::runtime_error(std::string("Unsupported piece type '") + ch + "'");
+			throw std::runtime_error(std::string("Unsupported piece type '") + ch + "'\n");
 		}
 	}
 
 	void invalidMove(const std::string& message, std::ostream& out)
 	{
-		out << "Move should be 5 or 5 chars long.\n"
+		out << "Move should be 4 or 5 chars long.\n"
 			<< "\t<source file><source rank><target file><target rank>[<pawn promotion>]\n"
 			<< "E.g. to move a2 to a4\n"
 			<< "\ta2a4\n"
@@ -61,11 +61,11 @@ namespace {
 		if (moveStr.size() != 4 && moveStr.size() != 5)
 			invalidMove("Move was not 4 or 5 chars long.", out);
 		char srcFile = moveStr[0];
-		if (srcFile < 'a' || srcFile > 'i') invalidMove(std::string("Source file '") + srcFile + "' has to be between 'a' and 'h'", out);
+		if (srcFile < 'a' || srcFile > 'h') invalidMove(std::string("Source file '") + srcFile + "' has to be between 'a' and 'h'", out);
 		char srcRank = moveStr[1];
 		if (srcRank < '1' || srcRank > '8') invalidMove(std::string("Source rank '") + srcRank + "' has to be between '1' and '7'", out);
 		char tgtFile = moveStr[2];
-		if (tgtFile < 'a' || tgtFile > 'i') invalidMove(std::string("Target file '") + tgtFile + "' has to be between 'a' and 'h'", out);
+		if (tgtFile < 'a' || tgtFile > 'h') invalidMove(std::string("Target file '") + tgtFile + "' has to be between 'a' and 'h'", out);
 		char tgtRank = moveStr[3];
 		if (tgtRank < '1' || tgtRank > '8') invalidMove(std::string("Target rank '") + tgtRank + "' has to be between '1' and '7'", out);
 
@@ -82,44 +82,6 @@ namespace {
 		return move;
 		
 	}
-
-	inline char pieceTypeToChar(space::PieceType pieceType)
-	{
-		switch (pieceType)
-		{
-		case space::PieceType::Pawn:
-			return 'p';
-		case space::PieceType::EnPassantCapturablePawn:
-			return 'p';
-		case space::PieceType::Rook:
-			return 'r';
-		case space::PieceType::Knight:
-			return 'n';
-		case space::PieceType::Bishop:
-			return 'b';
-		case space::PieceType::Queen:
-			return 'q';
-		case space::PieceType::King:
-			return 'k';
-		case space::PieceType::None:
-			throw std::runtime_error("Cannot convert piece type 'None' to text");
-		default:
-			throw std::runtime_error("pieceType " + std::to_string(static_cast<int>(pieceType)) + " not recognized.");
-		}
-	}
-
-	std::string moveToString(space::Move move)
-	{
-		std::string result("     ");
-		result[0] = static_cast<char>(move.sourceFile + 'a');
-		result[1] = static_cast<char>(move.sourceRank + '1');
-		result[2] = static_cast<char>(move.destinationFile + 'a');
-		result[3] = static_cast<char>(move.destinationRank + '1');
-		if (move.promotedPiece != space::PieceType::None)
-			result[4] = pieceTypeToChar(move.promotedPiece);
-		return result;
-	}
-
 
 	std::istream& initializeInputStream(const nlohmann::json& config, std::ifstream& fin)
 	{
@@ -182,9 +144,11 @@ namespace space{
 			}
 			if (validMoves.count(result) == 0)
 			{
-				m_outputStream << "Invalid move '" << moveToString(result) << "'. Valid moves are: \n";
-				for (const auto& validMove : validMoves)
-					m_outputStream << moveToString(validMove.first) << " ";
+				m_outputStream << "Invalid move '" << result.toString() << "'. Valid moves are: \n";
+				for (const auto& validMove : validMoves) {
+					Move m = validMove.first;
+					m_outputStream << m.toString() << " ";
+				}
 				m_outputStream << std::endl;
 			}
 		} while (validMoves.count(result) == 0);

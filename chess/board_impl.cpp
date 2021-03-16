@@ -6,70 +6,8 @@
 #include <vector>
 #include <memory>
 
-namespace {
-
-	space::PieceType toPieceType(char c)
-	{
-		using namespace space;
-		// Pawn, EnPessantCapturablePawn, Rook, Knight, Bishop, Queen, King, None
-		switch (c)
-		{
-		case 'p':
-		case 'P':
-			return PieceType::Pawn;
-		case 'r':
-		case 'R':
-			return PieceType::Rook;
-		case 'n':
-		case 'N':
-			return PieceType::Knight;
-		case 'b':
-		case 'B':
-			return PieceType::Bishop;
-		case 'q':
-		case 'Q':
-			return PieceType::Queen;
-		case 'k':
-		case 'K':
-			return PieceType::King;
-		default:
-			throw std::runtime_error(std::string("Unrecognizable piece type '") + c + "'");
-		}
-	}
-
-} // end anonymous namespace
-
-
 
 namespace space {
-
-	// STRUCT Move
-
-	bool Move::operator<(Move const& that) const
-	{
-		int diff =  this->sourceRank - that.sourceRank;
-
-		if (diff == 0) {
-			diff = this->sourceFile - that.sourceFile;
-			if (diff == 0) {
-				diff = this->destinationRank - that.destinationRank;
-				if (diff == 0) {
-					diff = this->destinationFile - that.destinationFile;
-					if (diff == 0) {
-						diff = static_cast<int>(this->promotedPiece) - static_cast<int>(that.promotedPiece);
-					}
-				}
-			}
-		}
-
-		if (diff < 0) {
-			return true;
-		}
-		return false;
-		
-
-	}
-
 
 	// CLASS BoardImpl
 
@@ -370,21 +308,10 @@ namespace space {
 			for (int file = 0; file < 8; ++file)
 			{
 				ss.get(c);
-				if (c >= 'a' && c <= 'z')
+				if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
 				{
-					// black piece
-					Piece piece;
-					piece.color = Color::Black;
-					piece.pieceType = toPieceType(c);
-					board->m_pieces[rank][file] = piece;
-				}
-				else if (c >= 'A' && c <= 'Z')
-				{
-					// white piece
-					Piece piece;
-					piece.color = Color::White;
-					piece.pieceType = toPieceType(c);
-					board->m_pieces[rank][file] = piece;
+					// piece
+					board->m_pieces[rank][file] = Piece(c);
 				}
 				else if (c >= '1' && c <= '8')
 				{

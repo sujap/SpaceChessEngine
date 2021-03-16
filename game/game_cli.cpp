@@ -6,6 +6,8 @@
 #include <chess/board_impl.h>
 
 #include <chess/algo_factory.h>
+#include <algo_linear/algoLinear.h>
+
 #include "CliAlgo.h"
 
 namespace {
@@ -136,7 +138,6 @@ namespace {
 
 int main(int argc, char const * const * const argv) {
 	auto board = space::BoardImpl::getStartingBoard();
-
 	nlohmann::json config = parseConfig(argc, argv);
 	auto whiteAlgo = 
 		config.contains(WhiteAlgoFieldName) 

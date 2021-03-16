@@ -4,11 +4,17 @@
 
 #include <chess/board.h>
 #include <chess/board_impl.h>
+
+#include <chess/algo_factory.h>
 #include <algo_linear/algoLinear.h>
 
 #include "CliAlgo.h"
 
 namespace {
+
+
+	static std::string WhiteAlgoFieldName = "WhiteAlgo";
+	static std::string BlackAlgoFieldName = "BlackAlgo";
 
 	inline std::string getColorName(space::Color color)
 	{
@@ -38,6 +44,7 @@ namespace {
 
 	void printBoard(std::ostream& out, const space::IBoard& board)
 	{
+
 		out << "  |  a  b  c  d  e  f  g  h  |\n"
 			<< "--+--------------------------+--\n";
 		for (int rank = 7; rank >= 0; --rank)
@@ -58,22 +65,62 @@ namespace {
 		out << "--+--------------------------+--\n"
 			<< "  |  a  b  c  d  e  f  g  h  |\n\n";
 	}
+
+	nlohmann::json parseConfig(int argc, char const* const* const argv)
+	{
+		nlohmann::json result;
+		for (int iarg = 1; iarg < argc; ++iarg)
+		{
+			std::string arg = argv[iarg];
+			if (arg == "--configFile")
+			{
+				if (++iarg >= argc)
+					throw std::runtime_error("invalid command line arguments: expected filename after '--configFile'");
+				std::ifstream fin(argv[iarg]);
+				fin >> result;
+			}
+			else if (arg == "--blackAlgo")
+			{
+				if (++iarg >= argc)
+					throw std::runtime_error("invalid command line arguments: expected filename after '--blackAlgo'");
+				result[BlackAlgoFieldName] = argv[iarg];
+			}
+			else if (arg == "--whiteAlgo")
+			{
+				if (++iarg >= argc)
+					throw std::runtime_error("invalid command line arguments: expected filename after '--whiteAlgo'");
+				result[WhiteAlgoFieldName] = argv[iarg];
+			}
+			else if (arg == "--help" || arg == "-h")
+			{
+				std::cout << "Space chess command line game engine.\n\t"
+					<< argv[0] << " [--configFile <json config file>] [--blackAlgo <blackAlgoName>] [--whiteAlgo <whiteAlgoName>] [--help|-h]"
+					<< std::endl;
+				std::exit(0);
+			}
+
+		}
+		return result;
+	}
 }
 
-int main() {
+int main(int argc, char const * const * const argv) {
 	auto board = space::BoardImpl::getStartingBoard();
-	auto whiteAlgo = space::CliAlgo::create(std::cin, std::cout);
-	// auto blackAlgo = space::CliAlgo::create(std::cin, std::cout);
-	std::vector<double> wts = { 1, 5, 4, 4, 12 };
-	auto bb = space::AlgoLinearDepthTwoExt(4, wts);
-	auto blackAlgo = std::make_shared< space::AlgoLinearDepthTwoExt>(bb);
 
+	nlohmann::json config = parseConfig(argc, argv);
+	auto whiteAlgo = 
+		config.contains(WhiteAlgoFieldName) 
+		? space::AlgoFactory::tryCreateAlgo(config[WhiteAlgoFieldName]).value()
+		: space::CliAlgo::create(std::cin, std::cout);
+	auto blackAlgo = 
+		config.contains(BlackAlgoFieldName)
+		? space::AlgoFactory::tryCreateAlgo(config[BlackAlgoFieldName]).value()
+		: space::CliAlgo::create(std::cin, std::cout);
 	bool recursiveError = false;
 	while (true)
 	{
 		printBoard(std::cout, *board);
-		 auto algo = board->whoPlaysNext() == space::Color::White ? whiteAlgo : blackAlgo;
-
+		auto algo = board->whoPlaysNext() == space::Color::White ? whiteAlgo : blackAlgo;
 		try {
 
 			if (board->isCheckMate()) {

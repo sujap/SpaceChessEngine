@@ -152,7 +152,7 @@ int main(int argc, char const * const * const argv) {
 	while (true)
 	{
 		printBoard(std::cout, *board);
-		// auto algo = board->whoPlaysNext() == space::Color::White ? whiteAlgo : blackAlgo;
+		 auto algo = board->whoPlaysNext() == space::Color::White ? whiteAlgo : blackAlgo;
 
 		try {
 
@@ -171,9 +171,7 @@ int main(int argc, char const * const * const argv) {
 				return 0;
 			}
 
-			auto nextMove = board->whoPlaysNext() == space::Color::White ? 
-										whiteAlgo->getNextMove(board) : 
-										blackAlgo.getNextMove(board);
+			auto nextMove = algo->getNextMove(board);
 			auto validMoves = board->getValidMoves();
 			auto validMoveIt = validMoves.find(nextMove);
 			if (validMoveIt == validMoves.cend())

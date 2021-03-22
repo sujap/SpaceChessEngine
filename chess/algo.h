@@ -32,21 +32,6 @@ namespace space {
         virtual Move getNextMove(IBoard::Ptr board) = 0;
     };
 
-    class IGame {
-    public:
-        virtual ~IGame() noexcept {}
-
-        using MoveList = std::vector<Move>;
-
-        virtual IAlgo::Ptr getBlackAlgo() const = 0;
-        virtual IAlgo::Ptr getWhiteAlgo() const = 0;
-        virtual IBoard::Ptr getCurrentBoard() const = 0;
-        virtual MoveList getMovesSoFar() = 0;
-
-        IBoard::Ptr makeNextMove(Move move);
-        Move getNextMove();
-    };
-
 
 }
 

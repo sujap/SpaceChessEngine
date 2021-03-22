@@ -18,7 +18,6 @@ TEST(BoardSuite, StartingBoardTest) {
 
 TEST(BoardSuite, BoardBasicsTest) {
 	using namespace space;
-	ASSERT_EQ(2 + 2, 5 - 1);
 	IBoard::Ptr startingBoard = BoardImpl::getStartingBoard();
 	auto aa = startingBoard->getPiece({ 0,4 });
 	ASSERT_EQ(aa.has_value(), true);
@@ -101,11 +100,12 @@ TEST(AlgoSuite, AlgoLinearTest) {
 	std::vector<double> wts01 = {1, 5, 4, 4, 10};
 	using namespace space;
 
-	Fen boardfen = Fen("8/8/2kq1r2/8/2KBNR2/8/8/8 b - - 0 0");
+	//Fen boardfen = Fen("8/8/2kq1r2/8/2KBNR2/8/8/8 b - - 0 0");
+	Fen boardfen = Fen("1n1qk1nr/8/8/4NP2/3P4/1pP3Pp/rB5P/3Q1RKB w - - 0 0");
 	auto b0 = BoardImpl::fromFen(boardfen);
 
     //auto aa = AlgoLinearDepthOne(wts01);
-	auto aa = AlgoLinearDepthTwoExt(5, wts01);
+	auto aa = AlgoLinearDepthTwoExt(15, wts01);
 
 	Move m0 = aa.getNextMove(b0);
 

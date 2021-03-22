@@ -107,7 +107,7 @@ namespace {
 int main(int argc, char const * const * const argv) {
 	auto board = space::BoardImpl::getStartingBoard();
 
-	nlohmann::json config = parseConfig(argc, argv);
+/*	nlohmann::json config = parseConfig(argc, argv);
 	auto whiteAlgo = 
 		config.contains(WhiteAlgoFieldName) 
 		? space::AlgoFactory::tryCreateAlgo(config[WhiteAlgoFieldName]).value()
@@ -115,10 +115,23 @@ int main(int argc, char const * const * const argv) {
 	auto blackAlgo = 
 		config.contains(BlackAlgoFieldName)
 		? space::AlgoFactory::tryCreateAlgo(config[BlackAlgoFieldName]).value()
-		: space::CliAlgo::create(std::cin, std::cout);
+		: space::CliAlgo::create(std::cin, std::cout);  */
+
+	std::vector<double> wts = { 1, 9, 7, 7, 15 };
+
+	auto whiteAlgo = std::make_shared<space::AlgoLinearDepthTwoExt>(space::AlgoLinearDepthTwoExt(6, wts));
+
+	auto blackAlgo = space::CliAlgo::create(std::cin, std::cout);
+
 	bool recursiveError = false;
+	int moveCounter = 0;
+
 	while (true)
-	{
+	{   
+		std::cout 
+			<< "#" << moveCounter 
+			<<  "  " << getColorName(board->whoPlaysNext()) 
+			<< std::endl;
 		printBoard(std::cout, *board);
 		auto algo = board->whoPlaysNext() == space::Color::White ? whiteAlgo : blackAlgo;
 		try {
@@ -144,6 +157,7 @@ int main(int argc, char const * const * const argv) {
 			if (validMoveIt == validMoves.cend())
 				throw std::runtime_error(getColorName(board->whoPlaysNext()) + " played invalid move.");
 			board = validMoveIt->second;
+			++moveCounter;
 		}
 		catch (const std::bad_alloc&)
 		{

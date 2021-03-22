@@ -70,7 +70,7 @@ namespace space {
 		}
 	}
 
-	char Piece::toChar() {
+	char Piece::toChar() const{
 		char c = pieceTypeToChar(this->pieceType);
 		if (this->color == Color::White)
 			c += 'A' - 'a';
@@ -81,14 +81,14 @@ namespace space {
 
 	// STRUCT Move
 
-	Move::Move(std::string s) {
+	Move::Move(const std::string& s) {
 		//TODO
 
 
 	}
 
 
-	std::string Move::toString() {
+	std::string Move::toString() const{
 		std::string result("     ");
 		result[0] = static_cast<char>(this->sourceFile + 'a');
 		result[1] = static_cast<char>(this->sourceRank + '1');

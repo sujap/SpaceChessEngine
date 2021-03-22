@@ -18,7 +18,7 @@ namespace space {
 		Piece() {}
 		Piece(PieceType _p, Color _c) : pieceType(_p), color(_c) {}
 		Piece(char c);
-		char toChar();
+		char toChar() const;
 	};
 
 	struct Position {
@@ -37,9 +37,9 @@ namespace space {
 		Move(int v_sourceRank, int v_sourceFile, int v_destinationRank, int v_destinationFile, PieceType v_promotedPiece = PieceType::None) :
 			sourceRank(v_sourceRank), sourceFile(v_sourceFile), destinationRank(v_destinationRank), destinationFile(v_destinationFile), promotedPiece(v_promotedPiece)
 		{}
-		Move(std::string s);
+		Move(const std::string &s);
 
-		std::string toString();	
+		std::string toString() const;	
 		bool operator <(const Move& that) const;
 	};
 

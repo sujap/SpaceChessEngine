@@ -8,13 +8,15 @@
 namespace space {
 
 	struct AlgoDumboConfig {
+		double maxDepth;
+		double maxNumStates;
 		double maxScore;
-		double castlingScore;
 		double pawnScore;
 		double rookScore;
 		double knightScore;
 		double bishopScore;
 		double queenScore;
+		double validMoveScore;
 	};
 
 	class AlgoDumbo: public IAlgo {
@@ -24,6 +26,9 @@ namespace space {
 
 			AlgoDumbo();
 			AlgoDumbo(const nlohmann::json& config);
+
+		private:
+			AlgoDumboConfig m_config;
 
 	};
 

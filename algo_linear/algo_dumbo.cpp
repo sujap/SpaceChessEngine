@@ -6,6 +6,8 @@
 #include <set>
 #include <limits>
 
+#define NYI throw std::runtime_error("Not yet implemented");
+
 
 namespace {
 
@@ -21,8 +23,10 @@ namespace {
 			return false;
 		}
 	};
+	void testStateCompare() { NYI; }
 	space::IBoard::Ptr stateToBoard(const State& state);
 	State boardToState(const space::IBoard& board);
+	void testBoardToState() { NYI; }
 
 	using StateScores = std::map<State, std::vector<double>, StateCompare>;
 	using StateHandle = StateScores::iterator;
@@ -32,6 +36,7 @@ namespace {
 	void setScore(StateScores& stateScores, const State& state, int depth, double score);
 	double getScore(const StateScores& stateScores, const State& state, int depth);
 	const State& getState(StateHandle stateHandle) { return stateHandle->first; }
+	void testStateOperations() { NYI; }
 
 
 	struct StateHandleCompare {
@@ -39,6 +44,7 @@ namespace {
 			return StateCompare()(left->first, right->first);
 		}
 	};
+	void testStateHandleCompare() { NYI; }
 	using StateSet = std::set<StateHandle, StateHandleCompare>;
 	void addState(StateScores& stateScores, StateSet& stateSet, const State& state, int maxDepth);
 	void addState(StateSet& stateSet, const StateHandle& stateHandle);
@@ -49,6 +55,7 @@ namespace {
 		for (auto stateHandle: ss)
 			tfunc(stateHandle);
 	}
+	void testStateScoreOperations() { NYI; }
 
 
 
@@ -68,6 +75,7 @@ namespace {
 		else
 			return [](double l, double r) -> bool { return l > r; };
 	}
+	void testComparatorForColor() { NYI; }
 	
 
 	void exploreStates(
@@ -76,10 +84,15 @@ namespace {
 			int curDepth,
 			space::Color whoPlaysNext,
 			const space::AlgoDumboConfig& config);
+	void testExploreStates() { NYI; }
 
 	double computeBasicScore(
 			const State& state,
 			const space::AlgoDumboConfig& config);
+	void testComputeBasicScore() { NYI; }
+
+	void testConfigParsing() { NYI; }
+	void testGetNextMove() { NYI; }
 
 
 } //end anonymous namespace
@@ -89,6 +102,24 @@ namespace {
 
 
 namespace space {
+
+	space::AlgoDumboConfig::AlgoDumboConfig() :
+		maxDepth(5),
+		maxNumStates(1000 * 1000),
+		maxScore(10*1000),
+		pawnScore(1),
+		rookScore(5),
+		knightScore(3),
+		bishopScore(3),
+		queenScore(8),
+		validMoveScore(1)
+	{ }
+
+	space::AlgoDumboConfig::AlgoDumboConfig(const nlohmann::json& config)
+	{
+		throw std::runtime_error("AlgoDumboConfig::AlgoDumboConfig(nlohmann::json) not yet implemented");
+	}
+
 
 	Move AlgoDumbo::getNextMove(IBoard::Ptr board) {
 
@@ -141,6 +172,20 @@ namespace space {
 
 	AlgoDumbo::AlgoDumbo(const nlohmann::json& config) {
 		throw std::runtime_error("AlgoDumbo::AlgoDumbo(json) not yet implemented");
+	}
+
+	void AlgoDumbo::runInternalTests()
+	{
+		// TODO: implement all tests
+		// testStateCompare();
+		// testBoardToState();
+		// testStateOperations();
+		// testStateHandleCompare();
+		// testStateScoreOperations();
+		// testComparatorForColor();
+		// testExploreStates();
+		// testComputeBasicScore();
+		// testConfigParsing();
 	}
 
 

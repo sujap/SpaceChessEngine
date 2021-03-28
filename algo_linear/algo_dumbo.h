@@ -17,6 +17,8 @@ namespace space {
 		double bishopScore;
 		double queenScore;
 		double validMoveScore;
+		AlgoDumboConfig();
+		AlgoDumboConfig(const nlohmann::json& config);
 	};
 
 	class AlgoDumbo: public IAlgo {
@@ -26,6 +28,8 @@ namespace space {
 
 			AlgoDumbo();
 			AlgoDumbo(const nlohmann::json& config);
+
+			static void runInternalTests();
 
 		private:
 			AlgoDumboConfig m_config;

@@ -3,6 +3,7 @@
 #include <chess/board_impl.h>
 #include <chess/fen.h>
 #include <algo_linear/algoLinear.h>
+#include <algo_linear/algo_dumbo.h>
 
 
 TEST(BoardSuite, StartingBoardTest) {
@@ -120,4 +121,8 @@ TEST(AlgoSuite, AlgoLinearTest) {
 	ASSERT_TRUE(b2.has_value());
 
 
+}
+
+TEST(AlgoSuite, AlgoDumboTest) {
+	space::AlgoDumbo::runInternalTests();
 }

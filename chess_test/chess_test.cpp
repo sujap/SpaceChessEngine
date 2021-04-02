@@ -124,5 +124,15 @@ TEST(AlgoSuite, AlgoLinearTest) {
 }
 
 TEST(AlgoSuite, AlgoDumboTest) {
-	space::AlgoDumbo::runInternalTests();
+	// TODO: implement all tests
+	// testStateCompare();
+	// testBoardToState();
+	// testStateOperations();
+	// testStateHandleCompare();
+	// testStateScoreOperations();
+	// testComparatorForColor();
+	// testExploreStates();
+	// testComputeBasicScore();
+	// testConfigParsing();
+
 }

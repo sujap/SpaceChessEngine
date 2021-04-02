@@ -29,8 +29,6 @@ namespace space {
 			AlgoDumbo();
 			AlgoDumbo(const nlohmann::json& config);
 
-			static void runInternalTests();
-
 		private:
 			AlgoDumboConfig m_config;
 

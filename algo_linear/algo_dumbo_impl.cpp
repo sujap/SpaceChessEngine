@@ -240,10 +240,17 @@ namespace algo_dumbo_impl {
 	}
 	void setInteger(State& state, int& si, int numBits, int integer)
 	{
+		int reverseInteger = 0;
+		for (int i = 0; i < numBits; ++i)
+		{
+			reverseInteger *= 2;
+			reverseInteger += (integer % 2);
+			integer /= 2;
+		}
 		while(numBits--)
 		{
-			setBool(state, si, integer & 1);
-			integer /= 2;
+			setBool(state, si, (reverseInteger % 2 == 1));
+			reverseInteger /= 2;
 		}
 	}
 	void setPieceType(State& state, int& si, space::PieceType pieceType)

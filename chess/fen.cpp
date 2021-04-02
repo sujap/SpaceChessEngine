@@ -99,8 +99,8 @@ namespace space {
 			result << '-';
 		else
 		{
-			result << ('a' + static_cast<char>(enPessantPosition->rank));
-			result << enPessantPosition->file;
+			result << static_cast<char>('a' + enPessantPosition->file);
+			result << (enPessantPosition->rank + 1);
 		}
 
 		result << ' ' << halfMoveClock << ' ' << fullMoves;

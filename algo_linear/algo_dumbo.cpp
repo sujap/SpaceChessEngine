@@ -61,7 +61,7 @@ namespace space {
 		Comparator scoreIsLess = getComparatorForColor(board->whoPlaysNext());
 		for (const auto & moveAndState: movesAndStates)
 		{
-			int score = getScore(stateScores, moveAndState.second, 0);
+			double score = getScore(stateScores, moveAndState.second, 0);
 			if (scoreIsLess(bestScore, score))
 			{
 				bestScore = score;

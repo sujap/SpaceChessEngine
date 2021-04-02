@@ -8,8 +8,8 @@
 namespace space {
 
 	struct AlgoDumboConfig {
-		double maxDepth;
-		double maxNumStates;
+		int maxDepth;
+		int maxNumStates;
 		double maxScore;
 		double pawnScore;
 		double rookScore;

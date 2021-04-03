@@ -39,4 +39,7 @@ namespace space {
 		inline bool inRange(int x) const { return (x >= 0) && (x < 8); }
 		Color getColor(bool current = true) const;
 	};
+
+
 }
+

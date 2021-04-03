@@ -20,6 +20,7 @@ namespace space {
 		return (current == (this->m_whoPlaysNext == Color::White) ? Color::White : Color::Black);
 	}
 
+	
 	std::optional<Piece> BoardImpl::getPiece(Position position) const
 	{
 		if (m_pieces[position.rank][position.file].pieceType == PieceType::None)
@@ -73,7 +74,7 @@ namespace space {
 		}
 		return false;
 
-	}
+	};
 
 	bool BoardImpl::isCheckMate() const 
 	{

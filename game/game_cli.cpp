@@ -156,6 +156,10 @@ int main(int argc, char const * const * const argv) {
 			auto validMoveIt = validMoves.find(nextMove);
 			if (validMoveIt == validMoves.cend())
 				throw std::runtime_error(getColorName(board->whoPlaysNext()) + " played invalid move.");
+			std::cout 
+				<< "Move: "
+				<< space::moveToString(nextMove, board) 
+				<< std::endl;
 			board = validMoveIt->second;
 			++moveCounter;
 		}

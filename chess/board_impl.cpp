@@ -184,6 +184,16 @@ namespace space {
 							newBoard->m_canWhiteCastleRight = false;
 					}
 				}
+
+				// If white captures (rook or not) on h8 or a8, black loses right
+				// to castle.
+				if (move.destinationRank == 7 && move.destinationFile == 0) {
+					newBoard->m_canBlackCastleRight = false;
+				}
+				else if (move.destinationRank == 7 && move.destinationFile == 7) {
+					newBoard->m_canBlackCastleLeft = false;
+				}
+
 				space_assert(!newBoard->m_canWhiteCastleLeft || newBoard->m_pieces[0][0].pieceType == PieceType::Rook,
 					   "White Left Rook moved, cant castle");
 				space_assert(!newBoard->m_canWhiteCastleRight || newBoard->m_pieces[0][7].pieceType == PieceType::Rook,
@@ -200,6 +210,17 @@ namespace space {
 							newBoard->m_canBlackCastleRight = false;
 					}
 				}
+
+				// If white captures (rook or not) on h8 or a8, black loses right
+				// to castle.
+				if (move.destinationRank == 0 && move.destinationFile == 0) {
+					newBoard->m_canWhiteCastleLeft = false;
+				}
+				else if (move.destinationRank == 0 && move.destinationFile == 7) {
+					newBoard->m_canWhiteCastleRight = false;
+				}
+
+
 				space_assert(!newBoard->m_canBlackCastleLeft || newBoard->m_pieces[7][7].pieceType == PieceType::Rook,
 					"Black Left Rook moved, cant castle");
 				space_assert(!newBoard->m_canBlackCastleRight || newBoard->m_pieces[7][0].pieceType == PieceType::Rook,
@@ -437,15 +458,21 @@ namespace space {
 		ss.get(c);
 		if (c >= 'a' && c <= 'h')
 		{
-			int rank = c - 'a';
+			int file = c - 'a';
 			ss.get(c);
-			int file;
+			int rank;
 			if (c >= '1' && c <= '8')
-				file = c - '1';
+				rank = c - '1';
 			else
 				throw std::runtime_error(std::string("Expecting a digit from 1 to 8, got '") + c + "'");
 			if (board->m_whoPlaysNext == Color::Black)
 				rank += 1;
+			else
+				rank -= 1;
+			space_assert(
+				board->m_pieces[rank][file].pieceType == PieceType::Pawn,
+				"En passant capture square does not have a pawn in front of it."
+			);
 			board->m_pieces[rank][file].pieceType = PieceType::EnPassantCapturablePawn;
 		}
 		else if (c != '-') throw std::runtime_error(std::string("Expecting 'a'-'h' or '-', got '") + c + "'");
@@ -659,7 +686,7 @@ namespace space {
 		}
 
 		// for pawns, we examine for obstruction and capture rules here
-		if (t == PieceType::Pawn)
+		if (t == PieceType::Pawn || t == PieceType::EnPassantCapturablePawn)
 		{
 			int direction = (c == Color::White ? 1 : -1);
 

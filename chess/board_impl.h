@@ -18,6 +18,10 @@ namespace space {
 		bool canCastleRight(Color color) const override;
 		bool isStaleMate() const override;
 		bool isCheckMate() const override;
+		bool isUnderCheck(
+			Color color,
+			std::optional<Position> targetKingPosition = std::nullopt
+		) const override;
 		std::optional<Ptr> updateBoard(Move move) const override;
 		MoveMap getValidMoves() const override;
 
@@ -42,7 +46,6 @@ namespace space {
 		bool m_canBlackCastleRight;
 		Color m_whoPlaysNext;
 		bool checkObstructions(Move m) const;
-		bool isUnderCheck(Color color, std::optional<Position> targetKingPosition = std::nullopt) const;
 		std::vector<Move> getAllMoves(Color color) const;
 		std::vector<Move> getAllMoves(Position position) const;
 		std::vector<Move> getAllmovesWithoutObstructions(Color color) const;

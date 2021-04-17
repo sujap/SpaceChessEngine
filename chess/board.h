@@ -41,6 +41,10 @@ namespace space {
 
 		virtual bool isStaleMate() const = 0;
 		virtual bool isCheckMate() const = 0;
+		virtual bool isUnderCheck(
+			Color color,
+			std::optional<Position> targetKingPosition = std::nullopt
+		) const = 0;
 		virtual std::optional<Ptr> updateBoard(Move move) const = 0;
 		virtual MoveMap getValidMoves() const = 0;
 	};

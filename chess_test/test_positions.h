@@ -16,6 +16,7 @@ namespace space {
 
 
 	TestPositionCPtr startingPosition();
+	TestPositionCPtr queenTest1();
 	std::vector<TestPositionCPtr> getAllTestPositions();
 
 	std::string printAllMoves(const std::string& position);

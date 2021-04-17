@@ -1,7 +1,6 @@
 #include "board_impl.h"
 #include "common/base.h"
 
-#include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <vector>

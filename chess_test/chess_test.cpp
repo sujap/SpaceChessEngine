@@ -3,7 +3,6 @@
 #include <chess/board_impl.h>
 #include <chess/fen.h>
 #include <algo_linear/algoLinear.h>
-#include <algorithm>
 
 
 TEST(BoardSuite, StartingBoardTest) {
@@ -105,6 +104,12 @@ TEST(BoardSuite, FenEnpassantablePawnTest) {
 	auto piece_on_b5 = board->getPiece(Position(4, 1));
 	ASSERT_TRUE(piece_on_b5.has_value());
 	ASSERT_EQ(piece_on_b5.value().pieceType, PieceType::EnPassantCapturablePawn);
+
+	fen = Fen("2rr2k1/p5pb/7p/1p5P/1Pp2qP1/K7/8/8 b - b3 0 1");
+	board = BoardImpl::fromFen(fen);
+	auto piece_on_b4 = board->getPiece(Position(3, 1));
+	ASSERT_TRUE(piece_on_b4.has_value());
+	ASSERT_EQ(piece_on_b4.value().pieceType, PieceType::EnPassantCapturablePawn);
 }
 
 TEST(BoardSuite, EnpassantablePawnCheckTest) {

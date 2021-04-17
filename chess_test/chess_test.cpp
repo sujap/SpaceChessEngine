@@ -96,6 +96,41 @@ TEST(BoardSuite, BoardMovesTest) {
 
 }
 
+TEST(BoardSuite, CastlingFlagUpdate) {
+	using namespace space;
+
+	// Capture on h8
+	auto fen = Fen("3rk2r/1p2np2/pNp3q1/2PnQ1pp/1P6/P2P3P/4BPP1/1R3RK1 w k - 1 24");
+	auto board = BoardImpl::fromFen(fen);
+	auto Qxh8 = Move(4, 4, 7, 7);
+	auto newBoard = board->updateBoard(Qxh8);
+	ASSERT_TRUE(newBoard.has_value());
+	ASSERT_FALSE(newBoard.value()->canCastleLeft(Color::Black));
+
+	// Capture on a8
+	fen = Fen("r3k2r/8/8/3Q4/8/8/8/R3K2R w KQkq - 0 1");
+	board = BoardImpl::fromFen(fen);
+	auto Qxa8 = Move(4, 3, 7, 0);
+	newBoard = board->updateBoard(Qxa8);
+	ASSERT_TRUE(newBoard.has_value());
+	ASSERT_FALSE(newBoard.value()->canCastleRight(Color::Black));
+
+	// Capture on a1
+	fen = Fen("r3k2r/8/8/8/3q4/8/8/R3K2R b KQkq - 0 1");
+	board = BoardImpl::fromFen(fen);
+	auto Qxa1 = Move(3, 3, 0, 0);
+	newBoard = board->updateBoard(Qxa1);
+	ASSERT_TRUE(newBoard.has_value());
+	ASSERT_FALSE(newBoard.value()->canCastleLeft(Color::White));
+
+	// Capture on h1
+	fen = Fen("r3k2r/8/8/8/4q3/8/8/R3K2R b KQkq - 0 1");
+	board = BoardImpl::fromFen(fen);
+	auto Qxh1 = Move(3, 4, 0, 7);
+	newBoard = board->updateBoard(Qxh1);
+	ASSERT_TRUE(newBoard.has_value());
+	ASSERT_FALSE(newBoard.value()->canCastleRight(Color::White));
+}
 
 TEST(AlgoSuite, AlgoLinearTest) {
 	std::vector<double> wts01 = {1, 5, 4, 4, 10};

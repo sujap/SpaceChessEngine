@@ -184,6 +184,16 @@ namespace space {
 							newBoard->m_canWhiteCastleRight = false;
 					}
 				}
+
+				// If white captures (rook or not) on h8 or a8, black loses right
+				// to castle.
+				if (move.destinationRank == 7 && move.destinationFile == 0) {
+					newBoard->m_canBlackCastleRight = false;
+				}
+				else if (move.destinationRank == 7 && move.destinationFile == 7) {
+					newBoard->m_canBlackCastleLeft = false;
+				}
+
 				space_assert(!newBoard->m_canWhiteCastleLeft || newBoard->m_pieces[0][0].pieceType == PieceType::Rook,
 					   "White Left Rook moved, cant castle");
 				space_assert(!newBoard->m_canWhiteCastleRight || newBoard->m_pieces[0][7].pieceType == PieceType::Rook,
@@ -200,6 +210,17 @@ namespace space {
 							newBoard->m_canBlackCastleRight = false;
 					}
 				}
+
+				// If white captures (rook or not) on h8 or a8, black loses right
+				// to castle.
+				if (move.destinationRank == 0 && move.destinationFile == 0) {
+					newBoard->m_canWhiteCastleLeft = false;
+				}
+				else if (move.destinationRank == 0 && move.destinationFile == 7) {
+					newBoard->m_canWhiteCastleRight = false;
+				}
+
+
 				space_assert(!newBoard->m_canBlackCastleLeft || newBoard->m_pieces[7][7].pieceType == PieceType::Rook,
 					"Black Left Rook moved, cant castle");
 				space_assert(!newBoard->m_canBlackCastleRight || newBoard->m_pieces[7][0].pieceType == PieceType::Rook,

@@ -130,7 +130,7 @@ int main(int argc, char const * const * const argv) {
 	{   
 		std::cout 
 			<< "#" << moveCounter 
-			<<  "  " << getColorName(board->whoPlaysNext()) 
+			<<  "  " << getColorName(board->whoPlaysNext()) << " to play"
 			<< std::endl;
 		printBoard(std::cout, *board);
 		auto algo = board->whoPlaysNext() == space::Color::White ? whiteAlgo : blackAlgo;

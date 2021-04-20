@@ -6,10 +6,14 @@
 namespace space {
 
 
+	int Node::objectCount;
+
+
 	Node::Node(IBoard::Ptr v_board, double s, unsigned int v_depth) : board(v_board), score(s), depth(v_depth)
 	{
 		// this->fen = Fen::fromBoard(v_board, 0, 0).fen;
 		this->direction = colorToSign(v_board->whoPlaysNext());
+		++this->objectCount;
 	}
 
 	Move Node::bestMove()
@@ -19,7 +23,7 @@ namespace space {
 
 		int direction = this->direction;
 		using NodePair = std::pair<Move, Node::Ptr>;
-		auto cmp = [direction](const NodePair a, const NodePair b) {
+		auto cmp = [direction](const NodePair& a, const NodePair& b) {
 			return direction * (a.second->score - b.second->score) < 0;
 		}; // a better than b
 
@@ -28,7 +32,7 @@ namespace space {
 		return best.first;
 	}
 
-	int Node::familySize()
+	int Node::familySize() const
 	{
 		int count = 1;
 		for (const auto& child : this->children)
@@ -36,16 +40,16 @@ namespace space {
 		return count;
 	}
 
-	// ---------   Pruning & Recombine   --------
+	// ---------   Pruning & Folding   --------
 
 
 
-	Pruning_Cutoff::Score Pruning_Cutoff::getScoreDiff(int depth)
+	Pruning_Cutoff::Score Pruning_Cutoff::getScoreDiff(int depth) const
 	{
 		return this->scoreDiffVec.size() > depth ? this->scoreDiffVec[depth] : this->scoreDiffVec.back();
 	}
 
-	int Pruning_Cutoff::getMaxMoves(int depth)
+	int Pruning_Cutoff::getMaxMoves(int depth) const
 	{
 		return this->maxMovesVec.size() > depth ? this->maxMovesVec[depth] : this->maxMovesVec.back();
 	}
@@ -106,7 +110,7 @@ namespace space {
 
 	
 
-	void Recombine_MinMax::recombine(Node::Ptr node)
+	void Fold_MinMax::fold(Node::Ptr node)
 	{
 		if (node->children.size() > 0) {
 			Move bestMove = node->bestMove();
@@ -171,7 +175,7 @@ namespace space {
 	// if leaf node -> do nothing
 	// else -> call refresh on each child
 	//         apply pruning on children
-	//         recombine to get (updated) score for current node
+	//         fold to get (updated) score for current node
 	//         delete board if present 
 	// Q: stack overflow ? seems max_memory <= height of tree + max Children coount
 
@@ -188,12 +192,9 @@ namespace space {
 		}
 		for (auto child : node->children) {
 			this->refreshNode(child.second);
-		}
-		//TODO assign correct pruning parameters
-		// ISSUE: cant access because pointer upcasted
-		
+		}		
 		this->prune->pruning(node);
-		this->rec->recombine(node);
+		this->rec->fold(node);
 	}
 
 
@@ -212,19 +213,23 @@ namespace space {
 		this->wts[std::make_shared<Feature_Piece>(Feature_Piece(PieceType::Bishop))] = 3.2;
 		this->wts[std::make_shared<Feature_Piece>(Feature_Piece(PieceType::Rook))] = 5;
 		this->wts[std::make_shared<Feature_Piece>(Feature_Piece(PieceType::Queen))] = 9;
+		
 		for(int file = 0; file< 8; file++)
 			this->wts[std::make_shared<Feature_PawnRank>(Feature_PawnRank(file))] = 0.2;
-		/*
-		this->wts[std::make_shared<Feature_MoveCount>(Feature_MoveCount())] = 0.1;
+
+		//this->wts[std::make_shared<Feature_PassedPawn>(Feature_PassedPawn())] = 0.2;
 		
-		*/
+		
+		// this->wts[std::make_shared<Feature_MoveCount>(Feature_MoveCount())] = 0.1;
+		
+		
+
 		// pruning
-		this->prune = std::make_shared<Pruning_Cutoff>(Pruning_Cutoff(8, 5, true));
+		this->prune = std::make_shared<Pruning_Cutoff>(Pruning_Cutoff(8, 500, true));
 
-		// recombine
-		this->rec = std::make_shared<Recombine_MinMax>(Recombine_MinMax());
+		// fold
+		this->rec = std::make_shared<Fold_MinMax>(Fold_MinMax());
 
-		// score Cutoffs
 	}
 
 

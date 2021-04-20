@@ -24,6 +24,17 @@ namespace space {
 		static Ptr getStartingBoard();
 		static Ptr fromFen(const Fen& fen);
 
+		static int checkMateCounter;
+		static int staleMateCounter;
+		static int underCheckCounter;
+
+		// isUnderCheck temporarily made public
+		bool isUnderCheck(Color color, std::optional<Position> targetKingPosition = std::nullopt) const;
+		bool isUnderCheck2(Color color, Position targetPosition) const;
+
+		Position getKingPosition(Color color) const;
+
+
 	private:
 		std::array<std::array<Piece, 8>, 8> m_pieces;
 		bool m_canWhiteCastleLeft;
@@ -32,7 +43,8 @@ namespace space {
 		bool m_canBlackCastleRight;
 		Color m_whoPlaysNext;
 		bool checkObstructions(Move m) const;
-		bool isUnderCheck(Color color, std::optional<Position> targetKingPosition = std::nullopt) const;
+		bool canMove(Move m) const;
+		bool checkPathEmpty(Move m) const;
 		std::vector<Move> getAllMoves(Color color) const;
 		std::vector<Move> getAllMoves(Position position) const;
 		std::vector<Move> getAllmovesWithoutObstructions(Color color) const;

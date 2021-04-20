@@ -11,8 +11,6 @@
 
 namespace space {
 
-
-
 	class Node {
 	public:
 		using Ptr = std::shared_ptr<Node>;
@@ -27,13 +25,18 @@ namespace space {
 		NodeMap children;
 		Score score;
 
-		Node() {} // just for initialization of algo
+		Node() 
+		{
+			++objectCount;
+		} // just for initialization of algo
 		Node& operator=(const Node&) = default;
 		Node(const Node&) = default;
 		Node(IBoard::Ptr v_board, double s, unsigned int v_depth);
 
 		Move bestMove(); // move with best score among children
-		int familySize(); // for analysis only
+		int familySize() const; // for analysis only
+
+		static int objectCount;
 
 	};
 
@@ -46,11 +49,11 @@ namespace space {
 	};
 
 
-	class Recombine {
+	class Fold {
 	public:
-		using Ptr = std::shared_ptr<Recombine>;
+		using Ptr = std::shared_ptr<Fold>;
 		using Score = double;
-		virtual void recombine(Node::Ptr) = 0;
+		virtual void fold(Node::Ptr) = 0;
 	};
 
 
@@ -72,16 +75,16 @@ namespace space {
 		bool bothCriteria;
 	private:
 		std::vector<Move> pruning(ScoreVec sv, int maxMoves, Score scoreDiff, int  direction);
-		Score getScoreDiff(int depth);
-		int getMaxMoves(int depth);
+		Score getScoreDiff(int depth) const;
+		int getMaxMoves(int depth) const;
 
 		std::vector<int> maxMovesVec;
 		std::vector<Score> scoreDiffVec;
 
 	};
 
-	class Recombine_MinMax : public Recombine {
-		void recombine(Node::Ptr) override;
+	class Fold_MinMax : public Fold {
+		void fold(Node::Ptr) override;
 	};
 
 
@@ -96,18 +99,18 @@ namespace space {
 		using FeatureMap = std::map<Feature::Ptr, double>;
 
 		AlgoGeneric() {}
-		AlgoGeneric(FeatureMap v_wts, Pruning::Ptr v_pr, Recombine::Ptr v_rc) :
+		AlgoGeneric(FeatureMap v_wts, Pruning::Ptr v_pr, Fold::Ptr v_rc) :
 		   wts(v_wts), prune(v_pr), rec(v_rc){}
 
 		static constexpr Score scoreMax = 1e8; 
-
-
+		
 		Score getLinearScore(IBoard::Ptr board);
+
+
 	protected:
 		FeatureMap wts;
 		Pruning::Ptr prune;
-		Recombine::Ptr rec;
-		std::vector<Score> scoreCutoffVec; //TODO use & reset
+		Fold::Ptr rec;
 
 
 		// storage objects
@@ -118,7 +121,7 @@ namespace space {
 		void expand();
 		void expand(Node::Ptr node); // expand all leaf nodes to one more level
 		void expandLeafNode(Node::Ptr node); // expand leaf node one level to all possible subsequent moves
-		void refresh(); // pruning & recombine alternately from bottom-up
+		void refresh(); // pruning & folding alternately from bottom-up
 		void refreshNode(Node::Ptr node); // for a single node
 
 	};

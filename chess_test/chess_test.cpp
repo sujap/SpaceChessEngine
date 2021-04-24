@@ -1,9 +1,13 @@
+#include "test_positions.h"
+
 #include <gtest/gtest.h>
 #include <chess/board.h>
 #include <chess/board_impl.h>
 #include <chess/fen.h>
 #include <algo_linear/algoLinear.h>
+#include <algo_linear/algo_dumbo.h>
 
+#include <sstream>
 
 TEST(BoardSuite, StartingBoardTest) {
 	using namespace space;
@@ -96,6 +100,34 @@ TEST(BoardSuite, BoardMovesTest) {
 
 }
 
+TEST(BoardSuite, TestMoveLibraries)
+{
+	auto testPositions = space::getAllTestPositions();
+	for (auto tp: testPositions)
+	{
+		auto board = space::BoardImpl::fromFen(tp->position);
+		auto validMoves = board->getValidMoves();
+		const auto & expectedValidMoves = tp->moveMap;
+		ASSERT_EQ(validMoves.size(), expectedValidMoves.size());
+		for (auto & mxb: validMoves)
+		{
+			std::stringstream movess;
+			movess << "{ "
+				<< mxb.first.sourceRank << ", " 
+				<< mxb.first.sourceFile << ", "
+				<< mxb.first.destinationRank << ", "
+				<< mxb.first.destinationFile << "}";
+			auto evmIt = expectedValidMoves.find(mxb.first);
+			ASSERT_TRUE(evmIt != expectedValidMoves.end()) 
+				<< "Board presented unexpected move " << movess.str();
+			const auto & expectedBoardFen = evmIt->second;
+			auto boardFen = space::Fen::fromBoard(mxb.second, 1, 1).fen;
+			ASSERT_EQ(boardFen, expectedBoardFen) 
+				<< "Unexpected board via move " << movess.str();
+		}
+	}
+}
+
 TEST(BoardSuite, FenEnpassantablePawnTest) {
 	using namespace space;
 
@@ -184,3 +216,4 @@ TEST(AlgoSuite, AlgoLinearTest) {
 
 
 }
+

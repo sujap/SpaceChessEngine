@@ -582,6 +582,26 @@ namespace space {
 		return board;
 	}
 
+
+	BoardImpl::BoardImpl() {}
+
+
+	BoardImpl::BoardImpl(
+			const std::array<std::array<Piece, 8>, 8> & pieces,
+			bool canWhiteCastleLeft,
+			bool canWhiteCastleRight,
+			bool canBlackCastleLeft,
+			bool canBlackCastleRight,
+			Color whoPlaysNext):
+		m_pieces(pieces),
+		m_canWhiteCastleLeft(canWhiteCastleLeft),
+		m_canWhiteCastleRight(canWhiteCastleRight),
+		m_canBlackCastleLeft(canBlackCastleLeft),
+		m_canBlackCastleRight(canBlackCastleRight),
+		m_whoPlaysNext(whoPlaysNext)
+	{ }
+
+  
 	// In this we check for obstructions, returns true if no obstructions
 	bool BoardImpl::checkObstructions(Move m) const
 	{

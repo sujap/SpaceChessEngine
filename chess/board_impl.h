@@ -48,3 +48,22 @@ namespace space {
 		Color getColor(bool current = true) const;
 	};
 }
+
+namespace space::internals {
+	class MoveOffsets {
+	public:
+        static const std::vector<std::vector<std::pair<int, int>>> orthogonal_offsets;
+        static const std::vector<std::vector<std::pair<int, int>>> diagonal_offsets;
+        static const std::vector<std::vector<std::pair<int, int>>> king_offsets;
+        static const std::vector<std::vector<std::pair<int, int>>> knight_offsets;
+	};
+
+	class Utils {
+	public:
+		static std::optional<Piece> get_first_piece(
+			const BoardImpl* board,
+			const Position position,
+			const std::vector<std::pair<int, int>>& offsets
+		);
+	};
+}

@@ -1,6 +1,7 @@
 #include "board_impl.h"
 #include "common/base.h"
 
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <vector>
@@ -666,14 +667,52 @@ namespace space {
 			}
 		}
 		Color oppColor = color == Color::Black ? Color::White : Color::Black;
-		std::vector<Move> allMoves = this->getAllmovesWithoutObstructions(oppColor);
-		for (const Move& m : allMoves) {
-			if (m.destinationRank == rank && m.destinationFile == file)
+		auto base_position = Position(rank, file);
+
+		for (auto& direction: internals::MoveOffsets::orthogonal_offsets) {
+			auto piece = internals::Utils::get_first_piece(this, base_position, direction);
+			if (piece.has_value() && piece.value().color == oppColor
+			    && (piece.value().pieceType == PieceType::Rook ||
+			        piece.value().pieceType == PieceType::Queen))
 				return true;
+		}
+
+		for (auto& direction: internals::MoveOffsets::diagonal_offsets) {
+			auto piece = internals::Utils::get_first_piece(this, base_position, direction);
+			if (piece.has_value() && piece.value().color == oppColor
+			    && (piece.value().pieceType == PieceType::Bishop ||
+			        piece.value().pieceType == PieceType::Queen)) 
+				return true;
+		}
+
+		for (auto& direction: internals::MoveOffsets::king_offsets) {
+			auto piece = internals::Utils::get_first_piece(this, base_position, direction);
+			if (piece.has_value() && piece.value().color == oppColor
+			    && piece.value().pieceType == PieceType::King)
+				return true;
+		}
+
+		for (auto& direction: internals::MoveOffsets::knight_offsets) {
+			auto piece = internals::Utils::get_first_piece(this, base_position, direction);
+			if (piece.has_value() && piece.value().color == oppColor
+			    && piece.value().pieceType == PieceType::Knight)
+				return true;
+		}
+
+		auto direction = oppColor == Color::White ? 1 : -1;
+		auto pawn_rank = rank - direction;
+		if (pawn_rank >= 0 && pawn_rank <= 7) {
+			for (auto file_offset: { 1, -1}) {
+				auto pawn_file = file_offset + file;
+				if (pawn_file < 0 || pawn_file > 7) continue;
+				auto pawn = m_pieces[pawn_rank][pawn_file];
+				if ((pawn.pieceType == PieceType::Pawn
+					|| pawn.pieceType == PieceType::EnPassantCapturablePawn)
+					&& pawn.color == oppColor) return true;
+			}
 		}
 		return false;
 	}
-
 
 	std::vector<Move> BoardImpl::getAllMoves(Color color) const
 	{
@@ -836,6 +875,7 @@ namespace space {
 		return moves;
 	}
 
+
 	std::string BoardImpl::as_string(
 			bool terminal_colors,
 			bool unicode_pieces,
@@ -873,5 +913,67 @@ namespace space {
 		   << std::endl;
 
 		return ss.str();
+	}
+
+}
+
+namespace space::internals {
+	// Offsets are structured as a vector of vectors.
+	// Starting from a base position, for each vector in offsets, we just need
+	// to look the first piece along the vector.
+	// E.g., for the orthogonal_offsets, we have 4 vectors corresponding the
+	// directions east, west, north, and south.
+	// To find a piece that can attack/move to the base position, we look
+	// the first piece along each vector, i.e., each direction.
+	const std::vector<std::vector<std::pair<int, int>>> MoveOffsets::orthogonal_offsets = {
+		{ { 0, 1 }, { 0, 2 }, { 0, 3 }, { 0, 4 }, { 0, 5 }, { 0, 6 }, { 0, 7 } },
+		{ { 0,-1 }, { 0,-2 }, { 0,-3 }, { 0,-4 }, { 0,-5 }, { 0,-6 }, { 0,-7 } },
+		{ { 1, 0 }, { 2, 0 }, { 3, 0 }, { 4, 0 }, { 5, 0 }, { 6, 0 }, { 7, 0 } },
+		{ {-1, 0 }, {-2, 0 }, {-3, 0 }, {-4, 0 }, {-5, 0 }, {-6, 0 }, {-7, 0 } },
+	};
+	const std::vector<std::vector<std::pair<int, int>>> MoveOffsets::diagonal_offsets = {
+		{ { 1, 1 }, { 2, 2 }, { 3, 3 }, { 4, 4 }, { 5, 5 }, { 6, 6 }, { 7, 7 } },
+		{ { 1,-1 }, { 2,-2 }, { 3,-3 }, { 4,-4 }, { 5,-5 }, { 6,-6 }, { 7,-7 } },
+		{ {-1,-1 }, {-2,-2 }, {-3,-3 }, {-4,-4 }, {-5,-5 }, {-6,-6 }, {-7,-7 } },
+		{ {-1, 1 }, {-2, 2 }, {-3, 3 }, {-4, 4 }, {-5, 5 }, {-6, 6 }, {-7, 7 } },
+	};
+	const std::vector<std::vector<std::pair<int, int>>> MoveOffsets::knight_offsets = {
+		{ { 1, 2 } },
+		{ { 1,-2 } },
+		{ {-1, 2 } },
+		{ {-1,-2 } },
+		{ { 2, 1 } },
+		{ { 2,-1 } },
+		{ {-2, 1 } },
+		{ {-2,-1 } },
+	};
+	const std::vector<std::vector<std::pair<int, int>>> MoveOffsets::king_offsets = {
+		{ {-1, 1 } },
+		{ {-1, 0 } },
+		{ {-1,-1 } },
+		{ { 0, 1 } },
+		{ { 0,-1 } },
+		{ { 1, 1 } },
+		{ { 1, 0 } },
+		{ { 1,-1 } },
+	};
+
+	std::optional<Piece> Utils::get_first_piece(
+		const BoardImpl* board,
+		const Position base_position,
+		const std::vector<std::pair<int, int>>& offsets
+	) {
+		for (auto offset: offsets) {
+			auto position = Position(
+				base_position.rank + offset.first,
+				base_position.file + offset.second
+			);
+			if (position.rank < 0 || position.rank > 7 ||
+			    position.file < 0 || position.file > 7) break;
+			auto piece = board->getPiece(position);
+			if (piece.has_value()) return piece;
+		}
+
+		return {};
 	}
 }

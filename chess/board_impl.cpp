@@ -1,6 +1,7 @@
 #include "board_impl.h"
 #include "common/base.h"
 
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <vector>
@@ -36,6 +37,107 @@ namespace {
 			throw std::runtime_error(std::string("Unrecognizable piece type '") + c + "'");
 		}
 	}
+
+	std::string piece_to_unicode(const space::Piece& piece) {
+		using namespace space;
+		if (piece.color == Color::White) {
+			switch (piece.pieceType) {
+				case PieceType::King: return "\u2654";
+				case PieceType::Queen: return "\u2655";
+				case PieceType::Rook: return "\u2656";
+				case PieceType::Bishop: return "\u2657";
+				case PieceType::Knight: return "\u2658";
+				case PieceType::Pawn: return "\u2659";
+				case PieceType::EnPassantCapturablePawn: return "\u2659";
+			}
+		}
+		else {
+			switch (piece.pieceType) {
+				case PieceType::King: return "\u265a";
+				case PieceType::Queen: return "\u265b";
+				case PieceType::Rook: return "\u265c";
+				case PieceType::Bishop: return "\u265d";
+				case PieceType::Knight: return "\u265e";
+				case PieceType::Pawn: return "\u265f";
+				case PieceType::EnPassantCapturablePawn: return "\u265f";
+			}
+		}
+
+		// PieceType::None
+		return " ";
+	}
+
+	inline char pieceTypeToChar(space::PieceType pieceType)
+	{
+		switch (pieceType)
+		{
+		case space::PieceType::Pawn:
+			return 'p';
+		case space::PieceType::EnPassantCapturablePawn:
+			return 'p';
+		case space::PieceType::Rook:
+			return 'r';
+		case space::PieceType::Knight:
+			return 'n';
+		case space::PieceType::Bishop:
+			return 'b';
+		case space::PieceType::Queen:
+			return 'q';
+		case space::PieceType::King:
+			return 'k';
+		case space::PieceType::None:
+			throw std::runtime_error("Cannot convert piece type 'None' to text");
+		default:
+			throw std::runtime_error("pieceType " + std::to_string(static_cast<int>(pieceType)) + " not recognized.");
+		}
+	}
+
+	char pieceToChar(space::Piece piece) {
+
+		char result = pieceTypeToChar(piece.pieceType);
+		if (piece.color == space::Color::White)
+			result = result + 'A' - 'a';
+		return result;
+	}
+
+	std::string board_as_plain_string(
+		const space::IBoard& board,
+		bool unicode_pieces,
+		space::Color perspective)
+	{
+		std::stringstream out;
+		out << "  |  a  b  c  d  e  f  g  h  |\n"
+			<< "--+--------------------------+--\n";
+		for (int rank = 7; rank >= 0; --rank)
+		{
+			out << (rank + 1) << " |  ";
+			for (int file = 0; file < 8; ++file)
+			{
+				auto piece = board.getPiece({ rank, file });
+				if (piece.has_value()) {
+					if (unicode_pieces) {
+						out << piece_to_unicode(piece.value()) << "  ";
+					}
+					else {
+						auto c = piece.value().pieceType != space::PieceType::None
+						    ? pieceToChar(piece.value())
+							: ' ';
+						out << c << "  ";
+					}
+				}
+				else {
+					out << ".  ";
+				}
+			}
+			out << "| " << (rank + 1) << "\n";
+			if (rank > 0)
+				out << "  |                          |  \n";
+		}
+		out << "--+--------------------------+--\n"
+			<< "  |  a  b  c  d  e  f  g  h  |\n\n";
+		return out.str();
+	}
+
 
 } // end anonymous namespace
 
@@ -137,7 +239,7 @@ namespace space {
 
 	}
 
-	bool BoardImpl::isCheckMate() const 
+	bool BoardImpl::isCheckMate() const
 	{
 		if (this->isUnderCheck(this->m_whoPlaysNext)) {
 			std::map<Move, IBoard::Ptr> allMoves = this->getValidMoves();
@@ -234,7 +336,7 @@ namespace space {
 			if (fileChange == 2 || fileChange == -2) {    // castling
 				int rookFile = (fileChange > 0 ? 7 : 0);
 				Piece pRook = this->m_pieces[move.sourceRank][rookFile];
-				space_assert(pRook.pieceType == PieceType::Rook && 
+				space_assert(pRook.pieceType == PieceType::Rook &&
 						pRook.color == pSource.color,
 					"Rook Not found for castling");
 
@@ -251,7 +353,7 @@ namespace space {
 			if (move.destinationRank == 0 || move.destinationRank == 7) {  // promotion
 				space_assert((move.destinationRank == 0) == (pSource.color == Color::Black),
 					"Pawn on back row");
-				pTargetNew.pieceType = move.promotedPiece; 
+				pTargetNew.pieceType = move.promotedPiece;
 			}
 
 			switch (pSource.color){
@@ -261,8 +363,8 @@ namespace space {
 						"White Pawn double move blocked");
 					pTargetNew.pieceType = PieceType::EnPassantCapturablePawn;
 				}
-				else if (move.sourceRank == 4 && 
-					newBoard->m_pieces[move.sourceRank][move.destinationFile].pieceType 
+				else if (move.sourceRank == 4 &&
+					newBoard->m_pieces[move.sourceRank][move.destinationFile].pieceType
 							== PieceType::EnPassantCapturablePawn){
 					newBoard->m_pieces[move.sourceRank][move.destinationFile].pieceType
 						= PieceType::None;    // En passant capture
@@ -320,7 +422,7 @@ namespace space {
 				abs(m.destinationFile - m.sourceFile) == 2   //Castling
 				) {
 				int castledir = (m.sourceFile - m.destinationFile) / 2;
-				if (this->isUnderCheck(color) ||            
+				if (this->isUnderCheck(color) ||
 					this->isUnderCheck(color, Position(m.sourceRank, m.sourceFile + castledir))
 					)
 					continue;
@@ -416,7 +518,7 @@ namespace space {
 			if (rank > 0)
 			{
 				ss.get(c);
-				if (c != '/') 
+				if (c != '/')
 					throw std::runtime_error(std::string("Expecting '/', got '") + c + "'");
 			}
 		}
@@ -481,7 +583,6 @@ namespace space {
 	}
 
 
-
 	BoardImpl::BoardImpl() {}
 
 
@@ -530,7 +631,7 @@ namespace space {
 		int deltay = m.destinationFile - m.sourceFile;
 
 		// path obstruction calculation
-		if (pType == PieceType::Rook || pType == PieceType::Bishop || pType == PieceType::Queen) 
+		if (pType == PieceType::Rook || pType == PieceType::Bishop || pType == PieceType::Queen)
 		{
 			space_assert(deltax == 0 || deltay == 0 || abs(deltax) == abs(deltay),
 				"invalide long  move");
@@ -586,14 +687,52 @@ namespace space {
 			}
 		}
 		Color oppColor = color == Color::Black ? Color::White : Color::Black;
-		std::vector<Move> allMoves = this->getAllmovesWithoutObstructions(oppColor);
-		for (const Move& m : allMoves) {
-			if (m.destinationRank == rank && m.destinationFile == file)
+		auto base_position = Position(rank, file);
+
+		for (auto& direction: internals::MoveOffsets::orthogonal_offsets) {
+			auto piece = internals::Utils::get_first_piece(this, base_position, direction);
+			if (piece.has_value() && piece.value().color == oppColor
+			    && (piece.value().pieceType == PieceType::Rook ||
+			        piece.value().pieceType == PieceType::Queen))
 				return true;
+		}
+
+		for (auto& direction: internals::MoveOffsets::diagonal_offsets) {
+			auto piece = internals::Utils::get_first_piece(this, base_position, direction);
+			if (piece.has_value() && piece.value().color == oppColor
+			    && (piece.value().pieceType == PieceType::Bishop ||
+			        piece.value().pieceType == PieceType::Queen)) 
+				return true;
+		}
+
+		for (auto& direction: internals::MoveOffsets::king_offsets) {
+			auto piece = internals::Utils::get_first_piece(this, base_position, direction);
+			if (piece.has_value() && piece.value().color == oppColor
+			    && piece.value().pieceType == PieceType::King)
+				return true;
+		}
+
+		for (auto& direction: internals::MoveOffsets::knight_offsets) {
+			auto piece = internals::Utils::get_first_piece(this, base_position, direction);
+			if (piece.has_value() && piece.value().color == oppColor
+			    && piece.value().pieceType == PieceType::Knight)
+				return true;
+		}
+
+		auto direction = oppColor == Color::White ? 1 : -1;
+		auto pawn_rank = rank - direction;
+		if (pawn_rank >= 0 && pawn_rank <= 7) {
+			for (auto file_offset: { 1, -1}) {
+				auto pawn_file = file_offset + file;
+				if (pawn_file < 0 || pawn_file > 7) continue;
+				auto pawn = m_pieces[pawn_rank][pawn_file];
+				if ((pawn.pieceType == PieceType::Pawn
+					|| pawn.pieceType == PieceType::EnPassantCapturablePawn)
+					&& pawn.color == oppColor) return true;
+			}
 		}
 		return false;
 	}
-
 
 	std::vector<Move> BoardImpl::getAllMoves(Color color) const
 	{
@@ -636,8 +775,8 @@ namespace space {
 		if (t == PieceType::King) {
 			for (int i = -1; i <= 1; i++) {
 				for (int j = -1; j <= 1; j++) {
-					if (((i != 0) || (j != 0)) && 
-						 inRange(i + rank) && inRange(j + file) ) 
+					if (((i != 0) || (j != 0)) &&
+						 inRange(i + rank) && inRange(j + file) )
 					{
 						moves.push_back({ rank, file, i + rank, j + file });
 					}
@@ -672,7 +811,7 @@ namespace space {
 		if (t == PieceType::Knight) {
 			for (int i = -1; i <= 1; i+= 2 ) {
 				for (int j = -1; j <= 1; j+= 2) {
-					for (int k = 1; k <= 2; k++) 
+					for (int k = 1; k <= 2; k++)
 					{
 						int tgtRank = rank + k * i;
 						int tgtFile = file + (3 - k) * j;
@@ -756,4 +895,105 @@ namespace space {
 		return moves;
 	}
 
+
+	std::string BoardImpl::as_string(
+			bool terminal_colors,
+			bool unicode_pieces,
+			Color perspective
+	) const {
+		if (!terminal_colors)
+			return board_as_plain_string(*this, unicode_pieces, perspective);
+		int start = perspective == Color::White ? 7 : 0;
+		int stop = perspective == Color::White ? -1 : 8;
+		int step = start > stop ? -1 : 1;
+
+		auto white_square = terminal_colors ? "\u001b[47m" : "";
+		auto black_square = terminal_colors ? "\u001b[45m" : "";
+		auto reset = "\u001b[0m";
+
+		std::stringstream ss;
+		for (int rank = start; rank != stop; rank += step) {
+			ss << " " << (rank + 1) << " ";
+			for (int file = 7 - start; file != 7 - stop; file -= step) {
+				auto square_color = (rank + file) % 2;
+				ss << (square_color == 1 ? white_square : black_square);
+
+				auto piece = m_pieces[rank][file];
+				if (unicode_pieces) {
+					ss << "\u001b[30m" << piece_to_unicode(piece);
+				}
+				else {
+					ss << (piece.pieceType != PieceType::None ? pieceToChar(piece) : ' ');
+				}
+				ss << ' ' << reset;
+			}
+			ss << std::endl;
+		}
+		ss << (perspective == Color::White ? "  a b c d e f g h" : "  h g f e d c b a")
+		   << std::endl;
+
+		return ss.str();
+	}
+
+}
+
+namespace space::internals {
+	// Offsets are structured as a vector of vectors.
+	// Starting from a base position, for each vector in offsets, we just need
+	// to look the first piece along the vector.
+	// E.g., for the orthogonal_offsets, we have 4 vectors corresponding the
+	// directions east, west, north, and south.
+	// To find a piece that can attack/move to the base position, we look
+	// the first piece along each vector, i.e., each direction.
+	const std::vector<std::vector<std::pair<int, int>>> MoveOffsets::orthogonal_offsets = {
+		{ { 0, 1 }, { 0, 2 }, { 0, 3 }, { 0, 4 }, { 0, 5 }, { 0, 6 }, { 0, 7 } },
+		{ { 0,-1 }, { 0,-2 }, { 0,-3 }, { 0,-4 }, { 0,-5 }, { 0,-6 }, { 0,-7 } },
+		{ { 1, 0 }, { 2, 0 }, { 3, 0 }, { 4, 0 }, { 5, 0 }, { 6, 0 }, { 7, 0 } },
+		{ {-1, 0 }, {-2, 0 }, {-3, 0 }, {-4, 0 }, {-5, 0 }, {-6, 0 }, {-7, 0 } },
+	};
+	const std::vector<std::vector<std::pair<int, int>>> MoveOffsets::diagonal_offsets = {
+		{ { 1, 1 }, { 2, 2 }, { 3, 3 }, { 4, 4 }, { 5, 5 }, { 6, 6 }, { 7, 7 } },
+		{ { 1,-1 }, { 2,-2 }, { 3,-3 }, { 4,-4 }, { 5,-5 }, { 6,-6 }, { 7,-7 } },
+		{ {-1,-1 }, {-2,-2 }, {-3,-3 }, {-4,-4 }, {-5,-5 }, {-6,-6 }, {-7,-7 } },
+		{ {-1, 1 }, {-2, 2 }, {-3, 3 }, {-4, 4 }, {-5, 5 }, {-6, 6 }, {-7, 7 } },
+	};
+	const std::vector<std::vector<std::pair<int, int>>> MoveOffsets::knight_offsets = {
+		{ { 1, 2 } },
+		{ { 1,-2 } },
+		{ {-1, 2 } },
+		{ {-1,-2 } },
+		{ { 2, 1 } },
+		{ { 2,-1 } },
+		{ {-2, 1 } },
+		{ {-2,-1 } },
+	};
+	const std::vector<std::vector<std::pair<int, int>>> MoveOffsets::king_offsets = {
+		{ {-1, 1 } },
+		{ {-1, 0 } },
+		{ {-1,-1 } },
+		{ { 0, 1 } },
+		{ { 0,-1 } },
+		{ { 1, 1 } },
+		{ { 1, 0 } },
+		{ { 1,-1 } },
+	};
+
+	std::optional<Piece> Utils::get_first_piece(
+		const BoardImpl* board,
+		const Position base_position,
+		const std::vector<std::pair<int, int>>& offsets
+	) {
+		for (auto offset: offsets) {
+			auto position = Position(
+				base_position.rank + offset.first,
+				base_position.file + offset.second
+			);
+			if (position.rank < 0 || position.rank > 7 ||
+			    position.file < 0 || position.file > 7) break;
+			auto piece = board->getPiece(position);
+			if (piece.has_value()) return piece;
+		}
+
+		return {};
+	}
 }

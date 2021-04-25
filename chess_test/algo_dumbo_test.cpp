@@ -194,3 +194,57 @@ TEST(AlgoDumboSuite, ComparatorForColorTest)
 	ASSERT_TRUE(cw(lw, gw));
 }
 
+TEST(AlgoDumboSuite, ComputeBasicScoreTest)
+{
+	using namespace algo_dumbo_impl;
+	space::AlgoDumboConfig config;
+
+	// balanced board is 0.0
+	auto board1 = space::BoardImpl::getStartingBoard();
+	auto state1 = boardToState(*board1);
+	double score1 = computeBasicScore(state1, config);
+	ASSERT_DOUBLE_EQ(score1, 0.0);
+
+	// check mate is maxScore
+	auto checkMateFen = space::Fen("8/8/8/8/8/1k6/8/K1q5 w - - 20 20");
+	auto checkMateState = boardToState(*space::BoardImpl::fromFen(checkMateFen));
+	double checkMateScore = computeBasicScore(checkMateState, config);
+	double expectedCheckMateScore = config.maxScore * getScoreFactorForColor(space::Color::Black);
+	ASSERT_DOUBLE_EQ(checkMateScore, expectedCheckMateScore);
+
+	// stale mate is zero
+	auto staleMateFen = space::Fen("8/8/3k4/8/8/8/2q5/K7 w - - 20 20");
+	auto staleMateBoard = space::BoardImpl::fromFen(staleMateFen);
+	auto staleMateState = boardToState(*staleMateBoard);
+	double staleMateScore = computeBasicScore(staleMateState, config);
+	ASSERT_DOUBLE_EQ(staleMateScore, 0.0);
+
+	// scores of individual pieces
+	std::string templateFen = "n6/ppp5/1k6/8/8/8/8/K7 w - - 20 20";
+	std::vector<std::pair<char, double> > pieceScores{
+		{'p', config.pawnScore},
+		{'r', config.rookScore},
+		{'n', config.knightScore},
+		{'b', config.bishopScore},
+		{'q', config.queenScore}
+	};
+	auto templateScore = computeBasicScore(boardToState(*space::BoardImpl::fromFen("1" + templateFen)), config);
+	for (const auto & testCase: pieceScores)
+	{
+		space::Fen testFen(testCase.first + templateFen);
+		auto testState = boardToState(*space::BoardImpl::fromFen(testFen));
+		auto testScore = computeBasicScore(testState, config);
+		auto expectedTestScore = templateScore + testCase.second * getScoreFactorForColor(space::Color::Black);
+		ASSERT_DOUBLE_EQ(testScore, expectedTestScore);
+	}
+
+	// scores for an extra valid move
+	std::string validMoveFen1 = "k7/pp6/8/8/8/8/8/K7 w - - 20 20";
+	auto validMoveScore1 = computeBasicScore(boardToState(*space::BoardImpl::fromFen(validMoveFen1)), config);
+	std::string validMoveFen2 = "k7/p1p5/8/8/8/8/8/K7 w - - 20 20";
+	auto validMoveScore2 = computeBasicScore(boardToState(*space::BoardImpl::fromFen(validMoveFen2)), config);
+	auto validMoveScoreDiff = validMoveScore2 - validMoveScore1;
+	auto expectedValidMoveScoreDiff = config.validMoveScore * getScoreFactorForColor(space::Color::Black);
+	ASSERT_DOUBLE_EQ(validMoveScoreDiff, expectedValidMoveScoreDiff);
+}
+

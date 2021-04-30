@@ -6,7 +6,7 @@
 
 namespace space {
 	enum class Color { White, Black };
-	enum class PieceType { Pawn, EnPassantCapturablePawn, Rook, Knight, Bishop, Queen, King, None };
+	enum class PieceType { Pawn, Rook, Knight, Bishop, Queen, King, None };
 	struct Position {
 		int rank;
 		int file;
@@ -34,6 +34,8 @@ namespace space {
 		using MoveMap = std::map<Move, Ptr>;
 		virtual Color whoPlaysNext() const = 0;
 		virtual std::optional<Piece> getPiece(Position position) const = 0;
+
+		std::optional<Position> enPassantSquare;
 
 		// (Left and right from that player's point of view)
 		virtual bool canCastleLeft(Color color) const = 0;

@@ -133,15 +133,15 @@ TEST(BoardSuite, FenEnpassantablePawnTest) {
 
 	auto fen = Fen("2rr2k1/p5pb/7p/1p5P/KPq3P1/8/8/8 w - b6 0 38");
 	auto board = BoardImpl::fromFen(fen);
-	auto piece_on_b5 = board->getPiece(Position(4, 1));
-	ASSERT_TRUE(piece_on_b5.has_value());
-	ASSERT_EQ(piece_on_b5.value().pieceType, PieceType::EnPassantCapturablePawn);
+	ASSERT_TRUE(board->enPassantSquare.has_value());
+	ASSERT_EQ(board->enPassantSquare.value().rank, 5);
+	ASSERT_EQ(board->enPassantSquare.value().file, 1);
 
 	fen = Fen("2rr2k1/p5pb/7p/1p5P/1Pp2qP1/K7/8/8 b - b3 0 1");
 	board = BoardImpl::fromFen(fen);
-	auto piece_on_b4 = board->getPiece(Position(3, 1));
-	ASSERT_TRUE(piece_on_b4.has_value());
-	ASSERT_EQ(piece_on_b4.value().pieceType, PieceType::EnPassantCapturablePawn);
+	ASSERT_TRUE(board->enPassantSquare.has_value());
+	ASSERT_EQ(board->enPassantSquare.value().rank, 2);
+	ASSERT_EQ(board->enPassantSquare.value().file, 1);
 }
 
 TEST(BoardSuite, EnpassantablePawnCheckTest) {
@@ -149,9 +149,9 @@ TEST(BoardSuite, EnpassantablePawnCheckTest) {
 
 	auto fen = Fen("2rr2k1/p5pb/7p/1p5P/KPq3P1/8/8/8 w - b6 0 38");
 	auto board = BoardImpl::fromFen(fen);
-	auto piece_on_b5 = board->getPiece(Position(4, 1));
-	ASSERT_TRUE(piece_on_b5.has_value());
-	ASSERT_EQ(piece_on_b5.value().pieceType, PieceType::EnPassantCapturablePawn);
+	ASSERT_TRUE(board->enPassantSquare.has_value());
+	ASSERT_EQ(board->enPassantSquare.value().rank, 5);
+	ASSERT_EQ(board->enPassantSquare.value().file, 1);
 
 	ASSERT_TRUE(board->isUnderCheck(Color::White));
 }
@@ -199,7 +199,7 @@ TEST(AlgoSuite, AlgoLinearTest) {
 	Fen boardfen = Fen("8/8/2kq1r2/8/2KBNR2/8/8/8 b - - 0 0");
 	auto b0 = BoardImpl::fromFen(boardfen);
 
-    //auto aa = AlgoLinearDepthOne(wts01);
+	//auto aa = AlgoLinearDepthOne(wts01);
 	auto aa = AlgoLinearDepthTwoExt(5, wts01);
 
 	Move m0 = aa.getNextMove(b0);

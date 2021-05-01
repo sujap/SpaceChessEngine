@@ -10,7 +10,6 @@
 
 	// TODO: implement all tests
 	// testExploreStates();
-	// testComputeBasicScore();
 	// testConfigParsing();
 
 
@@ -248,3 +247,43 @@ TEST(AlgoDumboSuite, ComputeBasicScoreTest)
 	ASSERT_DOUBLE_EQ(validMoveScoreDiff, expectedValidMoveScoreDiff);
 }
 
+TEST(AlgoDumboSuite, ExploreStatesTest)
+{
+	using namespace algo_dumbo_impl;
+	space::Fen fen("6k1/5ppp/8/8/5n2/2Q5/5PPP/6K1 b - - 20 20");
+	auto board = space::BoardImpl::fromFen(fen);
+	auto state = boardToState(*board);
+	space::AlgoDumboConfig config;
+	config.maxDepth = 3;
+	StateScores stateScores;
+	StateSet stateSet;
+	addState(stateScores, stateSet, state, config.maxDepth);
+	exploreStates(stateScores, stateSet, 0, space::Color::Black, config);
+	auto comparator = getComparatorForColor(space::Color::Black);
+	auto validMoves = board->getValidMoves();
+	auto bestMove = validMoves.begin()->first;
+	auto boardScore = 
+		[&stateScores, &validMoves](const space::IBoard& board) {
+			auto state = boardToState(board);
+			return getScore(stateScores, state, 1);
+		};
+	auto bestScore = boardScore(*validMoves.begin()->second);
+
+	for(const auto& mxb: validMoves) 
+	{
+		auto move = mxb.first;
+		auto board = mxb.second;
+		auto score = boardScore(*board);
+		if (comparator(bestScore, score))
+		{
+			bestScore = score;
+			bestMove = move;
+		}
+	}
+	
+	ASSERT_EQ(bestMove.sourceRank, 3);
+	ASSERT_EQ(bestMove.sourceFile, 5);
+	ASSERT_EQ(bestMove.destinationRank, 1);
+	ASSERT_EQ(bestMove.destinationFile, 4);
+	ASSERT_EQ(bestMove.promotedPiece, space::PieceType::None);
+}

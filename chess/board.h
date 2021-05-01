@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 #include <optional>
 #include <map>
 #include <sstream>
@@ -12,6 +13,7 @@ namespace space {
 		int rank;
 		int file;
 		Position(int v_rank, int v_file) : rank(v_rank), file(v_file) {}
+		Position(std::string san) : Position(san[1] - '1', san[0] - 'a') { }
 	};
 	struct Move {
 		int sourceRank;
@@ -35,6 +37,7 @@ namespace space {
 	struct Piece {
 		PieceType pieceType;
 		Color color;
+		char as_char() const;
 	};
 	class IBoard {
 	public:

@@ -878,6 +878,17 @@ namespace space {
 		return moves;
 	}
 
+	char Piece::as_char() const {
+		switch (pieceType) {
+			case PieceType::Rook  : return 'R';
+			case PieceType::Knight: return 'N';
+			case PieceType::Bishop: return 'B';
+			case PieceType::King  : return 'K';
+			case PieceType::Queen : return 'Q';
+			case PieceType::Pawn  : return 'P';
+			default               : return '-';
+		}
+	}
 
 	std::string BoardImpl::as_string(
 			bool terminal_colors,
@@ -917,7 +928,6 @@ namespace space {
 
 		return ss.str();
 	}
-
 }
 
 namespace space::internals {

@@ -18,7 +18,6 @@
 	// testConfigParsing();
 
 
-/*
 TEST(AlgoDumboSuite, StateCompareTest)
 {
 	using namespace algo_dumbo_impl;
@@ -77,4 +76,3 @@ TEST(AlgoDumboSuite, StateBoardConversionTest)
 		}
 	}
 }
-*/

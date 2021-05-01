@@ -3,6 +3,7 @@
 #include <memory>
 #include <optional>
 #include <map>
+#include <sstream>
 
 namespace space {
 	enum class Color { White, Black };
@@ -22,6 +23,13 @@ namespace space {
 		Move(int v_sourceRank, int v_sourceFile, int v_destinationRank, int v_destinationFile, PieceType v_promotedPiece = PieceType::None) :
 			sourceRank(v_sourceRank), sourceFile(v_sourceFile), destinationRank(v_destinationRank), destinationFile(v_destinationFile), promotedPiece(v_promotedPiece)
 		{}
+		inline std::string as_string() const {
+			std::stringstream ss;
+			ss << (char)('a' + sourceFile) << (sourceRank + 1)
+			   << " -> "
+			   << (char)('a' + destinationFile) << (destinationRank + 1);
+			return ss.str();
+		}
 		bool operator <(const Move& that) const;
 	};
 	struct Piece {

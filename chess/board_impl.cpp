@@ -361,7 +361,8 @@ namespace space {
 					pTargetNew.pieceType = PieceType::Pawn;
 					newBoard->enPassantSquare = { 2, move.sourceFile };
 				}
-				else if (move.sourceRank == 4 && move.destinationRank == enPassantSquare.value().rank
+				else if (move.sourceRank == 4 && enPassantSquare.has_value()
+				      && move.destinationRank == enPassantSquare.value().rank
 					  && move.destinationFile == enPassantSquare.value().file) {
 					newBoard->m_pieces[move.sourceRank][move.destinationFile].pieceType
 						= PieceType::None;    // En passant capture
@@ -374,7 +375,8 @@ namespace space {
 					pTargetNew.pieceType = PieceType::Pawn;
 					newBoard->enPassantSquare = { 5, move.sourceFile };
 				}
-				else if (move.sourceRank == 3 && move.destinationRank == enPassantSquare.value().rank
+				else if (move.sourceRank == 3 && enPassantSquare.has_value()
+				      && move.destinationRank == enPassantSquare.value().rank
 					  && move.destinationFile == enPassantSquare.value().file) {
 					newBoard->m_pieces[move.sourceRank][move.destinationFile].pieceType
 						= PieceType::None;    // En passant capture
@@ -420,7 +422,6 @@ namespace space {
 					continue;
 			}
 			movesMap[m] = newBoard;
-
 		}
 		return movesMap;
 	}
@@ -853,14 +854,10 @@ namespace space {
 			}
 		
 			// en passant pawn capture
-			if (enPassantSquare.has_value()) {
-				auto r = direction == 1 ? 4 : 3;
-				for (auto fileDiff : { 1, -1 }) {
-					auto f = enPassantSquare.value().file + fileDiff;
-					if (f < 0 || f > 7) continue;
-					if (this->m_pieces[r][f].pieceType == PieceType::Pawn)
-						moves.push_back({ rank, file, enPassantSquare.value().rank, enPassantSquare.value().file});
-				}
+			auto enPassantRank = direction == 1 ? 4 : 3;
+			if (t == PieceType::Pawn && enPassantSquare.has_value() &&
+				rank == enPassantRank && abs(file - enPassantSquare.value().file) == 1) {
+				moves.push_back({ rank, file, enPassantSquare.value().rank, enPassantSquare.value().file});
 			}
 		}
 

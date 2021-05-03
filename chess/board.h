@@ -3,6 +3,7 @@
 #include <memory>
 #include <optional>
 #include <map>
+#include <string>
 
 namespace space {
 	enum class Color { White, Black };

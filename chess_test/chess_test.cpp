@@ -4,10 +4,70 @@
 #include <chess/board.h>
 #include <chess/board_impl.h>
 #include <chess/fen.h>
+#include <chess/pgn.h>
 #include <algo_linear/algoLinear.h>
+#include <fstream>
+#include <filesystem>
 #include <algo_linear/algo_dumbo.h>
-
 #include <sstream>
+
+namespace test_utils {
+	void validate_ply(space::Ply ply) {
+		// Recreate the move and check.
+		std::string move;
+		if (ply.is_short_castle) {
+			move = "O-O";
+		}
+		else if (ply.is_long_castle) {
+			move = "O-O-O";
+		}
+		else {
+			move = (ply.piece.pieceType == space::PieceType::Pawn) ? move : (move + ply.piece.as_char());
+			move = move + ply.disambiguation;
+			move = move + (ply.is_capture ? "x" : "");
+			move = move + (char)('a' + ply.destination.file);
+			move = move + (char)('1' + ply.destination.rank);
+		}
+		if (ply.is_promotion) {
+			move = (move + "=") + ply.promotion_piece.as_char();
+		}
+		if (ply.is_checkmate) {
+			move = move + "#";
+		}
+		else if (ply.is_check) {
+			move = move + "+";
+		}
+
+		move = move + ply.annotation;
+		ASSERT_EQ(move, ply.move);
+	}
+
+	void validate_game_moves(space::Game& game) {
+		auto board = space::BoardImpl::fromFen(game.starting_position);
+
+		for (auto ply : game.plies) {
+			test_utils::validate_ply(ply);
+
+			auto move_opt = ply.to_move(board.get());
+			ASSERT_TRUE(move_opt.has_value());
+			auto move = move_opt.value();
+
+			auto board_opt = board->updateBoard(move);
+			ASSERT_TRUE(board_opt.has_value());
+			board = board_opt.value();
+
+			auto opp_color = ply.color == space::Color::White
+				? space::Color::Black
+				: space::Color::White;
+			auto board_in_check = board->isUnderCheck(opp_color);
+			ASSERT_EQ(board_in_check, ply.is_check);
+
+			auto board_in_checkmate = board->isCheckMate();
+			auto move_is_checkmate = ply.is_checkmate;
+			ASSERT_EQ(board_in_checkmate, ply.is_checkmate);
+		}
+	}
+}
 
 TEST(BoardSuite, StartingBoardTest) {
 	using namespace space;
@@ -16,7 +76,6 @@ TEST(BoardSuite, StartingBoardTest) {
 	std::string expectedStartingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 	ASSERT_EQ(startingFen.fen, expectedStartingFen);
 	ASSERT_EQ(Fen::fromBoard(BoardImpl::fromFen(startingFen), 0, 1).fen, expectedStartingFen);
-
 }
 
 
@@ -86,6 +145,7 @@ TEST(BoardSuite, BoardMovesTest) {
 	}
 	ASSERT_GT(bc3.size(), 0);
 */
+
 	std::string arabianFen = "7k/7R/4KN2/8/8/8/8/8 w - - 2 3";
 	auto arabian = BoardImpl::fromFen(arabianFen);
 	auto bd = arabian->getValidMoves();
@@ -95,8 +155,6 @@ TEST(BoardSuite, BoardMovesTest) {
 
 	ASSERT_GT(bd2.size(), 0);
 //	Fen::moves2string(arabian, bd);
-
-
 
 }
 
@@ -133,15 +191,15 @@ TEST(BoardSuite, FenEnpassantablePawnTest) {
 
 	auto fen = Fen("2rr2k1/p5pb/7p/1p5P/KPq3P1/8/8/8 w - b6 0 38");
 	auto board = BoardImpl::fromFen(fen);
-	auto piece_on_b5 = board->getPiece(Position(4, 1));
-	ASSERT_TRUE(piece_on_b5.has_value());
-	ASSERT_EQ(piece_on_b5.value().pieceType, PieceType::EnPassantCapturablePawn);
+	ASSERT_TRUE(board->enPassantSquare.has_value());
+	ASSERT_EQ(board->enPassantSquare.value().rank, 5);
+	ASSERT_EQ(board->enPassantSquare.value().file, 1);
 
 	fen = Fen("2rr2k1/p5pb/7p/1p5P/1Pp2qP1/K7/8/8 b - b3 0 1");
 	board = BoardImpl::fromFen(fen);
-	auto piece_on_b4 = board->getPiece(Position(3, 1));
-	ASSERT_TRUE(piece_on_b4.has_value());
-	ASSERT_EQ(piece_on_b4.value().pieceType, PieceType::EnPassantCapturablePawn);
+	ASSERT_TRUE(board->enPassantSquare.has_value());
+	ASSERT_EQ(board->enPassantSquare.value().rank, 2);
+	ASSERT_EQ(board->enPassantSquare.value().file, 1);
 }
 
 TEST(BoardSuite, EnpassantablePawnCheckTest) {
@@ -149,9 +207,9 @@ TEST(BoardSuite, EnpassantablePawnCheckTest) {
 
 	auto fen = Fen("2rr2k1/p5pb/7p/1p5P/KPq3P1/8/8/8 w - b6 0 38");
 	auto board = BoardImpl::fromFen(fen);
-	auto piece_on_b5 = board->getPiece(Position(4, 1));
-	ASSERT_TRUE(piece_on_b5.has_value());
-	ASSERT_EQ(piece_on_b5.value().pieceType, PieceType::EnPassantCapturablePawn);
+	ASSERT_TRUE(board->enPassantSquare.has_value());
+	ASSERT_EQ(board->enPassantSquare.value().rank, 5);
+	ASSERT_EQ(board->enPassantSquare.value().file, 1);
 
 	ASSERT_TRUE(board->isUnderCheck(Color::White));
 }
@@ -199,7 +257,7 @@ TEST(AlgoSuite, AlgoLinearTest) {
 	Fen boardfen = Fen("8/8/2kq1r2/8/2KBNR2/8/8/8 b - - 0 0");
 	auto b0 = BoardImpl::fromFen(boardfen);
 
-    //auto aa = AlgoLinearDepthOne(wts01);
+	//auto aa = AlgoLinearDepthOne(wts01);
 	auto aa = AlgoLinearDepthTwoExt(5, wts01);
 
 	Move m0 = aa.getNextMove(b0);
@@ -217,3 +275,30 @@ TEST(AlgoSuite, AlgoLinearTest) {
 
 }
 
+TEST(BoardSuite, PGNParseTest) {
+	using namespace space;
+
+	auto f = std::fstream(
+		"games/lichess_db_standard_rated_2013-01.pgn",
+		std::ios_base::in
+	);
+	auto games = PGN::parse_all(f);
+	f.close();
+
+	for (auto& game : games) {
+		std::cout << "Validating: " << game.metadata["Site"] << std::endl;
+		test_utils::validate_game_moves(game);
+	}
+}
+
+TEST(BoardSuite, PGNParseFromPositionTest) {
+	using namespace space;
+
+	auto f = std::fstream(
+		"games/from_position.pgn",
+		std::ios_base::in
+	);
+	auto game = PGN::parse(f);
+	f.close();
+	test_utils::validate_game_moves(*game);
+}

@@ -6,13 +6,14 @@
 #include <stdexcept>
 #include <vector>
 #include <memory>
+#include <cmath>
 
 namespace {
 
 	space::PieceType toPieceType(char c)
 	{
 		using namespace space;
-		// Pawn, EnPessantCapturablePawn, Rook, Knight, Bishop, Queen, King, None
+		// Pawn, Rook, Knight, Bishop, Queen, King, None
 		switch (c)
 		{
 		case 'p':
@@ -48,7 +49,6 @@ namespace {
 				case PieceType::Bishop: return "\u2657";
 				case PieceType::Knight: return "\u2658";
 				case PieceType::Pawn: return "\u2659";
-				case PieceType::EnPassantCapturablePawn: return "\u2659";
 			}
 		}
 		else {
@@ -59,7 +59,6 @@ namespace {
 				case PieceType::Bishop: return "\u265d";
 				case PieceType::Knight: return "\u265e";
 				case PieceType::Pawn: return "\u265f";
-				case PieceType::EnPassantCapturablePawn: return "\u265f";
 			}
 		}
 
@@ -72,8 +71,6 @@ namespace {
 		switch (pieceType)
 		{
 		case space::PieceType::Pawn:
-			return 'p';
-		case space::PieceType::EnPassantCapturablePawn:
 			return 'p';
 		case space::PieceType::Rook:
 			return 'r';
@@ -137,8 +134,6 @@ namespace {
 			<< "  |  a  b  c  d  e  f  g  h  |\n\n";
 		return out.str();
 	}
-
-
 } // end anonymous namespace
 
 
@@ -259,6 +254,7 @@ namespace space {
 		newBoard->m_canBlackCastleLeft = this->m_canBlackCastleLeft;
 		newBoard->m_canBlackCastleRight = this->m_canBlackCastleRight;
 		newBoard->m_whoPlaysNext = this->getColor(false);
+		newBoard->enPassantSquare = {};
 
 		Piece pSource = this->m_pieces[move.sourceRank][move.sourceFile];
 		Piece& pSourceNew = newBoard->m_pieces[move.sourceRank][move.sourceFile];
@@ -356,11 +352,12 @@ namespace space {
 				if (move.sourceRank == 1 && move.destinationRank == 3) {  // double move
 					space_assert(this->m_pieces[2][move.sourceFile].pieceType == PieceType::None,
 						"White Pawn double move blocked");
-					pTargetNew.pieceType = PieceType::EnPassantCapturablePawn;
+					pTargetNew.pieceType = PieceType::Pawn;
+					newBoard->enPassantSquare = { 2, move.sourceFile };
 				}
-				else if (move.sourceRank == 4 &&
-					newBoard->m_pieces[move.sourceRank][move.destinationFile].pieceType
-							== PieceType::EnPassantCapturablePawn){
+				else if (move.sourceRank == 4 && enPassantSquare.has_value()
+				      && move.destinationRank == enPassantSquare.value().rank
+					  && move.destinationFile == enPassantSquare.value().file) {
 					newBoard->m_pieces[move.sourceRank][move.destinationFile].pieceType
 						= PieceType::None;    // En passant capture
 				}
@@ -369,11 +366,12 @@ namespace space {
 				if (move.sourceRank == 6 && move.destinationRank == 4) {  // double move
 					space_assert(this->m_pieces[5][move.sourceFile].pieceType == PieceType::None,
 						"Black Pawn double move blocked");
-					pTargetNew.pieceType = PieceType::EnPassantCapturablePawn;
+					pTargetNew.pieceType = PieceType::Pawn;
+					newBoard->enPassantSquare = { 5, move.sourceFile };
 				}
-				else if (move.sourceRank == 3 &&
-					newBoard->m_pieces[move.sourceRank][move.destinationFile].pieceType
-					== PieceType::EnPassantCapturablePawn) {
+				else if (move.sourceRank == 3 && enPassantSquare.has_value()
+				      && move.destinationRank == enPassantSquare.value().rank
+					  && move.destinationFile == enPassantSquare.value().file) {
 					newBoard->m_pieces[move.sourceRank][move.destinationFile].pieceType
 						= PieceType::None;    // En passant capture
 				}
@@ -386,11 +384,6 @@ namespace space {
 			break;
 		}
 
-		int enPassantRow = pSource.color == Color::White ? 4 : 3; // en passant update
-		for (int j = 0; j < 8; j++) {
-			if (newBoard->m_pieces[enPassantRow][j].pieceType == PieceType::EnPassantCapturablePawn)
-				newBoard->m_pieces[enPassantRow][j].pieceType = PieceType::Pawn;
-		}
 		return newBoard;
 	}
 
@@ -416,14 +409,14 @@ namespace space {
 			if (this->m_pieces[m.sourceRank][m.sourceFile].pieceType == PieceType::King &&
 				abs(m.destinationFile - m.sourceFile) == 2   //Castling
 				) {
-				int castledir = (m.sourceFile - m.destinationFile) / 2;
+				int castledir = (m.destinationFile - m.sourceFile) / 2;
 				if (this->isUnderCheck(color) ||
+					this->isUnderCheck(color, Position(m.sourceRank, m.sourceFile + 2*castledir)) ||
 					this->isUnderCheck(color, Position(m.sourceRank, m.sourceFile + castledir))
 					)
 					continue;
 			}
 			movesMap[m] = newBoard;
-
 		}
 		return movesMap;
 	}
@@ -562,17 +555,19 @@ namespace space {
 				rank = c - '1';
 			else
 				throw std::runtime_error(std::string("Expecting a digit from 1 to 8, got '") + c + "'");
-			if (board->m_whoPlaysNext == Color::Black)
-				rank += 1;
-			else
-				rank -= 1;
+			int pawnRank = board->m_whoPlaysNext == Color::White ? 4 : 3;
 			space_assert(
-				board->m_pieces[rank][file].pieceType == PieceType::Pawn,
+				board->m_pieces[pawnRank][file].pieceType == PieceType::Pawn,
 				"En passant capture square does not have a pawn in front of it."
 			);
-			board->m_pieces[rank][file].pieceType = PieceType::EnPassantCapturablePawn;
+			board->enPassantSquare = { rank, file };
 		}
-		else if (c != '-') throw std::runtime_error(std::string("Expecting 'a'-'h' or '-', got '") + c + "'");
+		else if (c == '-') {
+			board->enPassantSquare = {};
+		}
+		else {
+			throw std::runtime_error(std::string("Expecting 'a'-'h' or '-', got '") + c + "'");
+		}
 
 		return board;
 	}
@@ -596,7 +591,7 @@ namespace space {
 		m_whoPlaysNext(whoPlaysNext)
 	{ }
 
-  
+
 	// In this we check for obstructions, returns true if no obstructions
 	bool BoardImpl::checkObstructions(Move m) const
 	{
@@ -609,7 +604,7 @@ namespace space {
 		PieceType pType = pMove.pieceType;
 		Color c = pMove.color;
 
-		if (pType == PieceType::Pawn || pType == PieceType::EnPassantCapturablePawn) {
+		if (pType == PieceType::Pawn) {
 			return true;
 		}
 		
@@ -721,9 +716,7 @@ namespace space {
 				auto pawn_file = file_offset + file;
 				if (pawn_file < 0 || pawn_file > 7) continue;
 				auto pawn = m_pieces[pawn_rank][pawn_file];
-				if ((pawn.pieceType == PieceType::Pawn
-					|| pawn.pieceType == PieceType::EnPassantCapturablePawn)
-					&& pawn.color == oppColor) return true;
+				if (pawn.pieceType == PieceType::Pawn && pawn.color == oppColor) return true;
 			}
 		}
 		return false;
@@ -820,7 +813,7 @@ namespace space {
 		}
 
 		// for pawns, we examine for obstruction and capture rules here
-		if (t == PieceType::Pawn || t == PieceType::EnPassantCapturablePawn)
+		if (t == PieceType::Pawn)
 		{
 			int direction = (c == Color::White ? 1 : -1);
 
@@ -856,40 +849,55 @@ namespace space {
 			}
 		
 			// en passant pawn capture
-
-			if (rank == (direction == 1 ? 4 : 3))
-			{
-				for (int j = -1; j <= 1; j += 2) {
-					if (inRange(file + j))
-					{
-						Piece pCapture = this->m_pieces[rank][file + j];
-						if (pCapture.pieceType == PieceType::EnPassantCapturablePawn &&
-							pCapture.color != c)
-						{
-							moves.push_back({ rank, file, rank + direction, file + j });
-						}
-					}
-				}
+			auto enPassantRank = direction == 1 ? 4 : 3;
+			if (t == PieceType::Pawn && enPassantSquare.has_value() &&
+				rank == enPassantRank && abs(file - enPassantSquare.value().file) == 1) {
+				moves.push_back({ rank, file, enPassantSquare.value().rank, enPassantSquare.value().file});
 			}
 		}
 
 		// Castling: denoted by king moving two steps in left/right
 
 		int direction = (c == Color::White) ? 1 : -1;
+		int baseRank = (c == Color::White) ? 0 : 7;
 
 		if (t == PieceType::King && canCastleLeft(c))
 		{
-			moves.push_back({ rank, file, rank, file - 2 * direction });
+			// Everything between king and rook should be clear.
+			auto rookFile = (c == Color::White) ? 0 : 7;
+			auto clear = true;
+			for (auto i = std::min(rookFile, 4) + 1; i < std::max(rookFile, 4); i++) {
+				if (m_pieces[baseRank][i].pieceType != PieceType::None) clear = false;
+			}
+			if (clear)
+				moves.push_back({ rank, file, rank, file - 2 * direction });
 		}
 
 		if (t == PieceType::King && canCastleRight(c))
 		{
+			auto rookFile = (c == Color::White) ? 7 : 0;
+			auto clear = true;
+			for (auto i = std::min(rookFile, 4) + 1; i < std::max(rookFile, 4); i++) {
+				if (m_pieces[baseRank][i].pieceType != PieceType::None) clear = false;
+			}
+			if (clear)
 			moves.push_back({ rank, file, rank, file + 2 * direction });
 		}
 
 		return moves;
 	}
 
+	char Piece::as_char() const {
+		switch (pieceType) {
+			case PieceType::Rook  : return 'R';
+			case PieceType::Knight: return 'N';
+			case PieceType::Bishop: return 'B';
+			case PieceType::King  : return 'K';
+			case PieceType::Queen : return 'Q';
+			case PieceType::Pawn  : return 'P';
+			default               : return '-';
+		}
+	}
 
 	std::string BoardImpl::as_string(
 			bool terminal_colors,
@@ -929,7 +937,6 @@ namespace space {
 
 		return ss.str();
 	}
-
 }
 
 namespace space::internals {

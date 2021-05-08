@@ -151,7 +151,6 @@ namespace algo_dumbo_impl {
 					switch (optPiece->pieceType)
 					{
 						case space::PieceType::Pawn:
-						case space::PieceType::EnPassantCapturablePawn:
 							totalScore += scoreFactor * config.pawnScore;
 							break;
 						case space::PieceType::Rook:

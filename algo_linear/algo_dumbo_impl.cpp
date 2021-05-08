@@ -292,7 +292,7 @@ namespace algo_dumbo_impl {
 	void addState(StateScores& stateScores, const State& state, int maxDepth)
 	{
 		if (!stateScores.count(state))
-			stateScores[state] = std::vector(maxDepth, std::numeric_limits<double>::quiet_NaN());
+			stateScores[state] = std::vector(maxDepth + 1, std::numeric_limits<double>::quiet_NaN());
 	}
 	void setScore(StateScores& stateScores, const State& state, int depth, double score)
 	{
@@ -306,7 +306,7 @@ namespace algo_dumbo_impl {
 	{
 		auto handle = stateScores.find(state);
 		if (handle == stateScores.end())
-			handle = stateScores.insert(std::make_pair(state, std::vector(maxDepth, std::numeric_limits<double>::quiet_NaN()))).first;
+			handle = stateScores.insert(std::make_pair(state, std::vector(maxDepth + 1, std::numeric_limits<double>::quiet_NaN()))).first;
 		stateSet.insert(handle);
 	}
 	void addState(StateSet& stateSet, const StateHandle& stateHandle)

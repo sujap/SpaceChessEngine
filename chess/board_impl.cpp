@@ -248,12 +248,7 @@ namespace space {
 	{
 		std::shared_ptr<BoardImpl> newBoard = std::make_shared<BoardImpl>();
 
-		for (int i = 0; i < 8; i++) {
-			for (int j = 0; j < 8; j++) {
-				Piece p = this->m_pieces[i][j];
-				newBoard->m_pieces[i][j] = {p.pieceType, p.color };
-			}
-		}
+		newBoard->m_pieces = this->m_pieces;
 		newBoard->m_canWhiteCastleLeft = this->m_canWhiteCastleLeft;
 		newBoard->m_canWhiteCastleRight = this->m_canWhiteCastleRight;
 		newBoard->m_canBlackCastleLeft = this->m_canBlackCastleLeft;

@@ -18,11 +18,30 @@ namespace space {
 		bool canCastleRight(Color color) const override;
 		bool isStaleMate() const override;
 		bool isCheckMate() const override;
+		bool isUnderCheck(
+			Color color,
+			std::optional<Position> targetKingPosition = std::nullopt
+		) const override;
 		std::optional<Ptr> updateBoard(Move move) const override;
 		MoveMap getValidMoves() const override;
 
 		static Ptr getStartingBoard();
 		static Ptr fromFen(const Fen& fen);
+		std::string as_string(
+		        bool unicode_pieces = false, 
+		        bool terminal_colors = false, 
+		        Color perspective = Color::White
+		) const override;
+
+		BoardImpl();
+		BoardImpl(
+				const std::array<std::array<Piece, 8>, 8> & pieces,
+				bool canWhiteCastleLeft,
+				bool canWhiteCastleRight,
+				bool canBlackCastleLeft,
+				bool canBlackCastleRight,
+				Color whoPlaysNext);
+
 
 	private:
 		std::array<std::array<Piece, 8>, 8> m_pieces;
@@ -32,11 +51,29 @@ namespace space {
 		bool m_canBlackCastleRight;
 		Color m_whoPlaysNext;
 		bool checkObstructions(Move m) const;
-		bool isUnderCheck(Color color, std::optional<Position> targetKingPosition = std::nullopt) const;
 		std::vector<Move> getAllMoves(Color color) const;
 		std::vector<Move> getAllMoves(Position position) const;
 		std::vector<Move> getAllmovesWithoutObstructions(Color color) const;
 		inline bool inRange(int x) const { return (x >= 0) && (x < 8); }
 		Color getColor(bool current = true) const;
+	};
+}
+
+namespace space::internals {
+	class MoveOffsets {
+	public:
+        static const std::vector<std::vector<std::pair<int, int>>> orthogonal_offsets;
+        static const std::vector<std::vector<std::pair<int, int>>> diagonal_offsets;
+        static const std::vector<std::vector<std::pair<int, int>>> king_offsets;
+        static const std::vector<std::vector<std::pair<int, int>>> knight_offsets;
+	};
+
+	class Utils {
+	public:
+		static std::optional<Piece> get_first_piece(
+			const BoardImpl* board,
+			const Position position,
+			const std::vector<std::pair<int, int>>& offsets
+		);
 	};
 }

@@ -3,11 +3,49 @@
 #include <stdexcept>
 #include <sstream>
 
+namespace {
+
+	char pieceToChar(space::Piece piece)
+	{
+		char result;
+		// Pawn, EnPassantCapturablePawn, Rook, Knight, Bishop, Queen, King, None
+		switch (piece.pieceType)
+		{
+		case space::PieceType::Pawn:
+			result = 'P';
+			break;
+		case space::PieceType::Rook:
+			result = 'R';
+			break;
+		case space::PieceType::Knight:
+			result = 'N';
+			break;
+		case space::PieceType::Bishop:
+			result = 'B';
+			break;
+		case space::PieceType::Queen:
+			result = 'Q';
+			break;
+		case space::PieceType::King:
+			result = 'K';
+			break;
+		default:
+			throw std::runtime_error("Unpexpected piece type " + std::to_string(static_cast<int>(piece.pieceType)));
+		}
+		if (piece.color == space::Color::Black)
+			result = (result + ('a' - 'A'));
+		return result;
+	}
+
+} // end anonymous namespace
+
+
+
 namespace space {
 	Fen Fen::fromBoard(const IBoard::Ptr& board, int halfMoveClock, int fullMoves)
 	{
 		std::stringstream result;
-		std::optional<Position> enPessantPosition;
+		std::optional<Position> enPassantPosition = board->enPassantSquare;
 		for (int rank = 7; rank >= 0; --rank)
 		{
 			Position pos(rank, 1);
@@ -25,16 +63,7 @@ namespace space {
 						result << skip;
 					skip = 0;
 					auto piece = *optPiece;
-					result << piece.toChar();
-
-					if (piece.pieceType == PieceType::EnPassantCapturablePawn)
-					{
-						enPessantPosition = pos;
-						if (piece.color == Color::Black)
-							++(enPessantPosition->rank);
-						else
-							--(enPessantPosition->rank);
-					}
+					result << pieceToChar(piece);
 				}
 			}
 			if (skip > 0) result << skip;
@@ -53,12 +82,12 @@ namespace space {
 		if (!canCastle) result << '-';
 
 		result << ' ';
-		if (!enPessantPosition)
+		if (!enPassantPosition)
 			result << '-';
 		else
 		{
-			result << ('a' + static_cast<char>(enPessantPosition->rank));
-			result << enPessantPosition->file;
+			result << static_cast<char>('a' + enPassantPosition->file);
+			result << (enPassantPosition->rank + 1);
 		}
 
 		result << ' ' << halfMoveClock << ' ' << fullMoves;

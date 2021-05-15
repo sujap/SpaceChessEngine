@@ -5,28 +5,17 @@
 #include <optional>
 #include <map>
 #include <string>
-
-
-	struct Piece {
-		PieceType pieceType;
-		Color color;
-		Piece() {}
-		Piece(PieceType _p, Color _c) : pieceType(_p), color(_c) {}
-		Piece(char c);
-		char toChar() const;
-	};
-
 #include <sstream>
 
 namespace space {
 	enum class Color { White, Black };
 	enum class PieceType { Pawn, Rook, Knight, Bishop, Queen, King, None };
-
-  PieceType charToPieceType(char c);
+	
+	PieceType charToPieceType(char c);
 	char pieceTypeToChar(PieceType p);
   
   
-  struct Position {
+    struct Position {
 		int rank;
 		int file;
 		Position(int v_rank, int v_file) : rank(v_rank), file(v_file) {}
@@ -45,17 +34,16 @@ namespace space {
 		{}
 		Move(const std::string &s);
 
-		std::string toString() const;	
+		std::string toString() const;
 		bool operator <(const Move& that) const;
 
-    inline std::string as_string() const {
+        inline std::string as_string() const {
 			std::stringstream ss;
 			ss << (char)('a' + sourceFile) << (sourceRank + 1)
 			   << " -> "
 			   << (char)('a' + destinationFile) << (destinationRank + 1);
 			return ss.str();
 		}
-		bool operator <(const Move& that) const;
 	};
   
 	struct Piece {
@@ -65,6 +53,7 @@ namespace space {
 		Piece(PieceType _p, Color _c) : pieceType(_p), color(_c) {}
 		Piece(char c);
 		char as_char() const;
+		std::string as_unicode() const;
   };
 
   class IBoard {

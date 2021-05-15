@@ -96,14 +96,15 @@ namespace {
 
 int main(int argc, char const * const * const argv) {
 	auto board = space::BoardImpl::getStartingBoard();
+	nlohmann::json config = parseConfig(argc, argv);
 
 	std::vector<double> wts = { 1, 9, 7, 7, 15 };
 
 	auto whiteAlgo = std::make_shared<space::AlgoLinearDepthTwoExt>(space::AlgoLinearDepthTwoExt(6, wts));
 
 	auto blackAlgo = space::CliAlgo::create(std::cin, std::cout);
-	auto terminal_colors = config.contains(TerminalColorsFieldName);
-	auto unicode = config.contains(UnicodeFieldName);
+	auto terminal_colors = true; // config.contains(TerminalColorsFieldName);
+	auto unicode = false; //  config.contains(UnicodeFieldName);
 
 	bool recursiveError = false;
 	int moveCounter = 0;

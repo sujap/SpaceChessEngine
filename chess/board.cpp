@@ -7,7 +7,7 @@
 namespace space {
 	PieceType charToPieceType(char c)
 	{
-		// Pawn, EnPessantCapturablePawn, Rook, Knight, Bishop, Queen, King, None
+		// Pawn, Rook, Knight, Bishop, Queen, King, None
 		switch (c)
 		{
 		case 'p':
@@ -37,8 +37,6 @@ namespace space {
 		switch (p)
 		{
 		case PieceType::Pawn:
-			return 'p';
-		case PieceType::EnPassantCapturablePawn:
 			return 'p';
 		case PieceType::Rook:
 			return 'r';
@@ -70,14 +68,39 @@ namespace space {
 		}
 	}
 
-	char Piece::toChar() const{
+	char Piece::as_char() const{
+		
 		char c = pieceTypeToChar(this->pieceType);
 		if (this->color == Color::White)
 			c += 'A' - 'a';
 		return c;
 	}
 
+	std::string Piece::as_unicode() const {
+		if (this->color == Color::White) {
+			switch (this->pieceType) {
+			case PieceType::King: return "\u2654";
+			case PieceType::Queen: return "\u2655";
+			case PieceType::Rook: return "\u2656";
+			case PieceType::Bishop: return "\u2657";
+			case PieceType::Knight: return "\u2658";
+			case PieceType::Pawn: return "\u2659";
+			}
+		}
+		else {
+			switch (this->pieceType) {
+			case PieceType::King: return "\u265a";
+			case PieceType::Queen: return "\u265b";
+			case PieceType::Rook: return "\u265c";
+			case PieceType::Bishop: return "\u265d";
+			case PieceType::Knight: return "\u265e";
+			case PieceType::Pawn: return "\u265f";
+			}
+		}
 
+		// PieceType::None
+		return " ";
+	}
 
 	// STRUCT Move
 
@@ -105,8 +128,8 @@ namespace space {
 		std::optional<Piece> pSource = board->getPiece({ m.sourceRank, m.sourceFile });
 		std::optional<Piece> pTarget = board->getPiece({ m.destinationRank,m.destinationFile });
 		space_assert(pSource.has_value(), "No piece to move " + result);
-		result = pSource.value().toChar() + result;
-		result += pTarget.has_value() ? pTarget.value().toChar() : '-';
+		result = pSource.value().as_char() + result;
+		result += pTarget.has_value() ? pTarget.value().as_char() : '-';
 		return result;
 	}
 

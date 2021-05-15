@@ -126,14 +126,14 @@ namespace space {
 
 		auto num2char = [](int num) { return char('0' + num);  };
 
-		moveStr += pSource.has_value() ? pSource.value().toChar() : '-';
+		moveStr += pSource.has_value() ? pSource.value().as_char() : '-';
 
 		moveStr += num2char(m.sourceRank);
 		moveStr += num2char(m.sourceFile);
 		moveStr += num2char(m.destinationRank);
 		moveStr += num2char(m.destinationFile);
 
-		moveStr += pTarget.has_value() ? pTarget.value().toChar() : '-';
+		moveStr += pTarget.has_value() ? pTarget.value().as_char() : '-';
 		if (pSource.has_value()) {
 			switch (pSource.value().pieceType) {
 
@@ -147,7 +147,7 @@ namespace space {
 						&& m.sourceRank == 6 && m.destinationRank == 7) ||
 					(pSource.value().color == Color::Black
 						&& m.sourceRank == 1 && m.destinationRank == 0))
-					moveStr += Piece( m.promotedPiece , pSource.value().color).toChar();
+					moveStr += Piece( m.promotedPiece , pSource.value().color).as_char();
 				break;
 
 			default:

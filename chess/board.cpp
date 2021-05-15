@@ -37,17 +37,17 @@ namespace space {
 		switch (p)
 		{
 		case PieceType::Pawn:
-			return 'p';
+			return 'P';
 		case PieceType::Rook:
-			return 'r';
+			return 'R';
 		case PieceType::Knight:
-			return 'n';
+			return 'N';
 		case PieceType::Bishop:
-			return 'b';
+			return 'B';
 		case PieceType::Queen:
-			return 'q';
+			return 'Q';
 		case PieceType::King:
-			return 'k';
+			return 'K';
 		case PieceType::None:
 			throw std::runtime_error("Cannot convert piece type 'None' to text");
 		default:
@@ -68,11 +68,13 @@ namespace space {
 		}
 	}
 
-	char Piece::as_char() const{
-		
+
+	// (Default: color=true) Uppercase for White, lowercase for black
+	// (color = false) All Uppercase
+	char Piece::as_char(bool color) const{		
 		char c = pieceTypeToChar(this->pieceType);
-		if (this->color == Color::White)
-			c += 'A' - 'a';
+		if (color && this->color == Color::Black)
+			c += 'a' - 'A';
 		return c;
 	}
 

@@ -22,14 +22,14 @@ namespace test_utils {
 			move = "O-O-O";
 		}
 		else {
-			move = (ply.piece.pieceType == space::PieceType::Pawn) ? move : (move + ply.piece.as_char());
+			move = (ply.piece.pieceType == space::PieceType::Pawn) ? move : (move + ply.piece.as_char(false));
 			move = move + ply.disambiguation;
 			move = move + (ply.is_capture ? "x" : "");
 			move = move + (char)('a' + ply.destination.file);
 			move = move + (char)('1' + ply.destination.rank);
 		}
 		if (ply.is_promotion) {
-			move = (move + "=") + ply.promotion_piece.as_char();
+			move = (move + "=") + ply.promotion_piece.as_char(false);
 		}
 		if (ply.is_checkmate) {
 			move = move + "#";

@@ -52,7 +52,7 @@ namespace space {
 		Piece() {}
 		Piece(PieceType _p, Color _c) : pieceType(_p), color(_c) {}
 		Piece(char c);
-		char as_char() const;
+		char as_char(bool color = true) const;
 		std::string as_unicode() const;
   };
 

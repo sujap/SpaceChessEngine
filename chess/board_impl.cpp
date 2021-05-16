@@ -1,6 +1,5 @@
 #include "board_impl.h"
 #include "common/base.h"
-#include "board.h"
 
 #include <sstream>
 #include <stdexcept>
@@ -88,7 +87,7 @@ namespace space {
 	}
 
 	bool BoardImpl::isCheckMate() const 
-	{		
+	{
 		if (this->isUnderCheck(this->m_whoPlaysNext)) {
 			std::map<Move, IBoard::Ptr> allMoves = this->getValidMoves();
 			return allMoves.size() == 0;

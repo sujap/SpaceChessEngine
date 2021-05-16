@@ -5,6 +5,13 @@
 
 
 namespace space {
+
+	int colorToSign(Color c) {
+		return c == Color::White ? 1 : -1;
+	}
+
+
+
 	PieceType charToPieceType(char c)
 	{
 		// Pawn, Rook, Knight, Bishop, Queen, King, None

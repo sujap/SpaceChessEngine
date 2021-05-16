@@ -10,7 +10,8 @@
 namespace space {
 	enum class Color { White, Black };
 	enum class PieceType { Pawn, Rook, Knight, Bishop, Queen, King, None };
-	
+
+  int colorToSign(Color);
 	PieceType charToPieceType(char c);
 	char pieceTypeToChar(PieceType p);
   

@@ -37,6 +37,7 @@ namespace space {
 	protected:
 		std::size_t breadth;
 		std::map<PieceType, double> weights;
+		const Score scoreMax = 1e8;
 		Score getLinearScore(IBoard::Ptr board);
 		std::vector<ScoreTriple> getAllScores(IBoard::Ptr board);
 		ScorePair findBestLinearMove(IBoard::Ptr board);

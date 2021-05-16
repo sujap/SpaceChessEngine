@@ -1,11 +1,14 @@
 #include "test_positions.h"
 
 #include <gtest/gtest.h>
+#include <common/base.h>
 #include <chess/board.h>
 #include <chess/board_impl.h>
 #include <chess/fen.h>
 #include <chess/pgn.h>
 #include <algo_linear/algoLinear.h>
+#include <algo_linear/algoGeneric.h>
+
 #include <fstream>
 #include <filesystem>
 #include <algo_linear/algo_dumbo.h>
@@ -260,18 +263,27 @@ TEST(AlgoSuite, AlgoLinearTest) {
 	auto aa = AlgoLinearDepthTwoExt(5, wts01);
 
 	Move m0 = aa.getNextMove(b0);
-
 	auto b1 = b0->updateBoard(m0);
-
 	ASSERT_TRUE(b1.has_value());
 
 	Move m1 = aa.getNextMove(b1.value());
-
 	auto b2 = b1.value()->updateBoard(m1);
-
 	ASSERT_TRUE(b2.has_value());
+}
 
 
+TEST(AlgoSuite, AlgoGenericTest) {
+	using namespace space;
+
+	Fen boardfen = Fen("1n1qk1nr/8/8/4NP2/3P4/1pP3Pp/rB5P/3Q1RKB w - - 0 0");
+	// Fen boardfen = Fen("8/8/q4k2/2n5/8/8/8/bK6 w - - 0 0");
+
+	// BoardImpl::initializeCounter();
+
+	auto b0 = BoardImpl::fromFen(boardfen);
+	auto aa = Algo442();
+
+	Move m0 = aa.getNextMove(b0);
 }
 
 TEST(BoardSuite, PGNParseTest) {

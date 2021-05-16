@@ -113,7 +113,7 @@ int main(int argc, char const * const * const argv) {
 	{   
 		std::cout 
 			<< "#" << moveCounter 
-			<<  "  " << getColorName(board->whoPlaysNext()) 
+			<<  "  " << getColorName(board->whoPlaysNext()) << " to play"
 			<< std::endl;
 		std::cout << board->as_string(terminal_colors, unicode, space::Color::White);
 		auto algo = board->whoPlaysNext() == space::Color::White ? whiteAlgo : blackAlgo;
@@ -139,6 +139,10 @@ int main(int argc, char const * const * const argv) {
 			auto validMoveIt = validMoves.find(nextMove);
 			if (validMoveIt == validMoves.cend())
 				throw std::runtime_error(getColorName(board->whoPlaysNext()) + " played invalid move.");
+			std::cout 
+				<< "Move: "
+				<< space::moveToString(nextMove, board) 
+				<< std::endl;
 			board = validMoveIt->second;
 			++moveCounter;
 		}

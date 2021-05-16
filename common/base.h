@@ -10,4 +10,7 @@ namespace space {
 	template<typename KeyType, typename ValueType>
 	KeyType get_best(const std::map<KeyType, ValueType>& x, bool high = true);
 
+	double urand();
+
+
 }

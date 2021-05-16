@@ -43,6 +43,9 @@ namespace space {
 				Color whoPlaysNext);
 
 
+		Position getKingPosition(Color color) const;
+
+
 	private:
 		std::array<std::array<Piece, 8>, 8> m_pieces;
 		bool m_canWhiteCastleLeft;
@@ -51,6 +54,9 @@ namespace space {
 		bool m_canBlackCastleRight;
 		Color m_whoPlaysNext;
 		bool checkObstructions(Move m) const;
+		bool canMove(Move m) const;
+		bool checkPathEmpty(Move m) const;
+    
 		std::vector<Move> getAllMoves(Color color) const;
 		std::vector<Move> getAllMoves(Position position) const;
 		std::vector<Move> getAllmovesWithoutObstructions(Color color) const;

@@ -12,6 +12,7 @@ namespace space {
 			throw std::runtime_error("Assertion Failure: " + message);
 	}
 
+
     template<typename KeyType, typename ValueType>
     KeyType get_best(const std::map<KeyType, ValueType>& x, bool high) {
         using pairtype = std::pair<KeyType, ValueType>;
@@ -23,4 +24,13 @@ namespace space {
         auto best = *std::max_element(x.begin(), x.end(), better);
         return best.first;
     }
+
+
+    double urand()
+    {
+        return (double) rand()/RAND_MAX;
+    }
+
+
+
 }

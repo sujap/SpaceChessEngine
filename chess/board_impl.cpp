@@ -63,7 +63,7 @@ namespace space {
 	Color BoardImpl::getColor(bool current) const{
 		return (current == (this->m_whoPlaysNext == Color::White) ? Color::White : Color::Black);
 	}
-
+	
 	std::optional<Piece> BoardImpl::getPiece(Position position) const
 	{
 		if (m_pieces[position.rank][position.file].pieceType == PieceType::None)
@@ -107,6 +107,18 @@ namespace space {
 	}
 	
 
+	Position space::BoardImpl::getKingPosition(Color color) const
+	{
+
+		for (int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
+				Piece p = this->m_pieces[i][j];
+				if (p.color == color && p.pieceType == PieceType::King) {
+					return Position(i, j);
+				}
+			}
+		}
+	}
 
 
 	bool BoardImpl::isStaleMate() const
@@ -116,7 +128,6 @@ namespace space {
 			return allMoves.size() == 0;
 		}
 		return false;
-
 	}
 
 	bool BoardImpl::isCheckMate() const
@@ -534,24 +545,13 @@ namespace space {
 	// if position specified, examines for king moving to that cell (useful in castling checks)
 	bool BoardImpl::isUnderCheck(Color color, std::optional<Position> targetKingPosition) const
 	{
-		int rank, file;
-		if (targetKingPosition.has_value()) {
-			rank = targetKingPosition.value().rank;
-			file = targetKingPosition.value().file;
-		}
-		else {
-			for (int i = 0; i < 8; i++) {
-				for (int j = 0; j < 8; j++) {
-					Piece p = this->m_pieces[i][j];
-					if (p.color == color && p.pieceType == PieceType::King) {
-						rank = i;
-						file = j;
-					}
-				}
-			}
-		}
+		Position base_position = targetKingPosition.has_value() ?
+			targetKingPosition.value() 
+			: getKingPosition(color);
+
 		Color oppColor = color == Color::Black ? Color::White : Color::Black;
-		auto base_position = Position(rank, file);
+		int rank = base_position.rank;
+		int file = base_position.file;
 
 		for (auto& direction: internals::MoveOffsets::orthogonal_offsets) {
 			auto piece = internals::Utils::get_first_piece(this, base_position, direction);
@@ -594,6 +594,99 @@ namespace space {
 			}
 		}
 		return false;
+	}
+
+	//TODO
+	// checks if all in-between cells for a move are empty
+	bool BoardImpl::checkPathEmpty(Move m) const
+	{
+		bool diag = (m.destinationFile != m.sourceFile) && (m.destinationRank != m.sourceRank);
+
+
+		int deltax = m.destinationRank - m.sourceRank;
+		int deltay = m.destinationFile - m.sourceFile;
+		int delta = std::max(abs(deltax), abs(deltay));
+		int sgnx = deltax > 0 ? 1 : (deltax < 0 ? -1 : 0);
+		int sgny = deltay > 0 ? 1 : (deltay < 0 ? -1 : 0);
+
+		for (int j = 1; j < delta; j++)
+		{
+			int rank = m.sourceRank + j * sgnx;
+			int file = m.sourceFile + j * sgny;
+			if (this->m_pieces[rank][file].pieceType != PieceType::None)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+
+
+
+	// TODO: check if a move is possible 
+	// ignoring : 
+	//		who plays next 
+	//		checkmate
+	//		zero move
+	//		castling
+	bool BoardImpl::canMove(Move m) const
+	{
+		Piece pSource = this->m_pieces[m.sourceRank][m.sourceFile];
+		Piece pTarget = this->m_pieces[m.destinationRank][m.destinationFile];
+
+		// moving to same color
+		if ((pTarget.pieceType != PieceType::None)&&
+			pTarget.color == pSource.color)
+			return false;
+
+		switch (pSource.pieceType)
+		{
+		case PieceType::None:
+			return false;
+
+		case PieceType::Pawn:
+		{
+			int direction = colorToSign(pSource.color);
+			return ((m.destinationFile == m.sourceFile) &&
+				(m.destinationRank == m.sourceRank + direction) &&
+				(pTarget.pieceType == PieceType::None))
+
+				|| ((abs(m.destinationFile - m.sourceFile) == 1) &&
+					(m.destinationRank == m.sourceRank + direction) &&
+					(pTarget.color != pSource.color));
+		}
+
+		case PieceType::Bishop:
+			return (abs(m.destinationFile - m.sourceFile) ==  abs(m.destinationRank - m.sourceRank)) 
+				&& checkPathEmpty(m);
+
+		case PieceType::Knight:
+		{
+			auto f = [](int a, int b) {
+				return (a == 1 && b == 2) || (a == 2 && b == 1); };
+			return f(abs(m.destinationFile - m.sourceFile),
+				abs(m.destinationRank - m.sourceRank));
+		}
+
+		case PieceType::Rook:
+			return ((m.destinationFile == m.sourceFile) ||
+					(m.destinationRank == m.sourceRank)) &&
+				checkPathEmpty(m);
+
+		case PieceType::Queen:
+			return ((m.destinationFile == m.sourceFile) ||
+					(m.destinationRank == m.sourceRank) ||
+					abs(m.destinationFile - m.sourceFile) == 
+								abs(m.destinationRank - m.sourceRank)
+					) &&
+				checkPathEmpty(m);
+
+		case PieceType::King:
+			return	abs(m.destinationFile - m.sourceFile) <= 1 &&
+				abs(m.destinationRank - m.sourceRank) <= 1;			
+		}
+
 	}
 
 	std::vector<Move> BoardImpl::getAllMoves(Color color) const

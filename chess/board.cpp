@@ -14,7 +14,7 @@ namespace space {
 
 	PieceType charToPieceType(char c)
 	{
-		// Pawn, EnPessantCapturablePawn, Rook, Knight, Bishop, Queen, King, None
+		// Pawn, Rook, Knight, Bishop, Queen, King, None
 		switch (c)
 		{
 		case 'p':
@@ -44,19 +44,17 @@ namespace space {
 		switch (p)
 		{
 		case PieceType::Pawn:
-			return 'p';
-		case PieceType::EnPassantCapturablePawn:
-			return 'p';
+			return 'P';
 		case PieceType::Rook:
-			return 'r';
+			return 'R';
 		case PieceType::Knight:
-			return 'n';
+			return 'N';
 		case PieceType::Bishop:
-			return 'b';
+			return 'B';
 		case PieceType::Queen:
-			return 'q';
+			return 'Q';
 		case PieceType::King:
-			return 'k';
+			return 'K';
 		case PieceType::None:
 			throw std::runtime_error("Cannot convert piece type 'None' to text");
 		default:
@@ -77,14 +75,41 @@ namespace space {
 		}
 	}
 
-	char Piece::toChar() const{
+
+	// (Default: color=true) Uppercase for White, lowercase for black
+	// (color = false) All Uppercase
+	char Piece::as_char(bool color) const{		
 		char c = pieceTypeToChar(this->pieceType);
-		if (this->color == Color::White)
-			c += 'A' - 'a';
+		if (color && this->color == Color::Black)
+			c += 'a' - 'A';
 		return c;
 	}
 
+	std::string Piece::as_unicode() const {
+		if (this->color == Color::White) {
+			switch (this->pieceType) {
+			case PieceType::King: return "\u2654";
+			case PieceType::Queen: return "\u2655";
+			case PieceType::Rook: return "\u2656";
+			case PieceType::Bishop: return "\u2657";
+			case PieceType::Knight: return "\u2658";
+			case PieceType::Pawn: return "\u2659";
+			}
+		}
+		else {
+			switch (this->pieceType) {
+			case PieceType::King: return "\u265a";
+			case PieceType::Queen: return "\u265b";
+			case PieceType::Rook: return "\u265c";
+			case PieceType::Bishop: return "\u265d";
+			case PieceType::Knight: return "\u265e";
+			case PieceType::Pawn: return "\u265f";
+			}
+		}
 
+		// PieceType::None
+		return " ";
+	}
 
 	// STRUCT Move
 
@@ -112,8 +137,8 @@ namespace space {
 		std::optional<Piece> pSource = board->getPiece({ m.sourceRank, m.sourceFile });
 		std::optional<Piece> pTarget = board->getPiece({ m.destinationRank,m.destinationFile });
 		space_assert(pSource.has_value(), "No piece to move " + result);
-		result = pSource.value().toChar() + result;
-		result += pTarget.has_value() ? pTarget.value().toChar() : '-';
+		result = pSource.value().as_char() + result;
+		result += pTarget.has_value() ? pTarget.value().as_char() : '-';
 		return result;
 	}
 

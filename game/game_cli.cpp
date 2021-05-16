@@ -15,6 +15,8 @@ namespace {
 
 	static std::string WhiteAlgoFieldName = "WhiteAlgo";
 	static std::string BlackAlgoFieldName = "BlackAlgo";
+	static std::string TerminalColorsFieldName = "TerminalColors";
+	static std::string UnicodeFieldName = "Unicode";
 
 	inline std::string getColorName(space::Color color)
 	{
@@ -28,7 +30,6 @@ namespace {
 			throw std::runtime_error("Unrecognized color value " + std::to_string(static_cast<int>(color)));
 		}
 	}
-	
 
 	inline space::Color getOppositeColor(space::Color color) {
 		switch (color)
@@ -40,30 +41,6 @@ namespace {
 		default:
 			throw std::runtime_error("Unrecognized color value " + std::to_string(static_cast<int>(color)));
 		}
-	}
-
-	void printBoard(std::ostream& out, const space::IBoard& board)
-	{
-
-		out << "  |  a  b  c  d  e  f  g  h  |\n"
-			<< "--+--------------------------+--\n";
-		for (int rank = 7; rank >= 0; --rank)
-		{
-			out << (rank + 1) << " |  ";
-			for (int file = 0; file < 8; ++file)
-			{
-				auto piece = board.getPiece({ rank, file });
-				if (piece.has_value())
-					out << piece.value().toChar()    << "  ";
-				else
-					out << ".  ";
-			}
-			out << "| " << (rank + 1) << "\n";
-			if (rank > 0)
-				out << "  |                          |  \n";
-		}
-		out << "--+--------------------------+--\n"
-			<< "  |  a  b  c  d  e  f  g  h  |\n\n";
 	}
 
 	nlohmann::json parseConfig(int argc, char const* const* const argv)
@@ -91,6 +68,14 @@ namespace {
 					throw std::runtime_error("invalid command line arguments: expected filename after '--whiteAlgo'");
 				result[WhiteAlgoFieldName] = argv[iarg];
 			}
+			else if (arg == "--color")
+			{
+				result[TerminalColorsFieldName] = true;
+			}
+			else if (arg == "--unicode")
+			{
+				result[UnicodeFieldName] = true;
+			}
 			else if (arg == "--help" || arg == "-h")
 			{
 				std::cout << "Space chess command line game engine.\n\t"
@@ -102,26 +87,24 @@ namespace {
 		}
 		return result;
 	}
+
+	struct Config {
+		bool terminal_colors;
+		bool unicode;
+	};
 }
 
 int main(int argc, char const * const * const argv) {
 	auto board = space::BoardImpl::getStartingBoard();
-
-/*	nlohmann::json config = parseConfig(argc, argv);
-	auto whiteAlgo = 
-		config.contains(WhiteAlgoFieldName) 
-		? space::AlgoFactory::tryCreateAlgo(config[WhiteAlgoFieldName]).value()
-		: space::CliAlgo::create(std::cin, std::cout);
-	auto blackAlgo = 
-		config.contains(BlackAlgoFieldName)
-		? space::AlgoFactory::tryCreateAlgo(config[BlackAlgoFieldName]).value()
-		: space::CliAlgo::create(std::cin, std::cout);  */
+	nlohmann::json config = parseConfig(argc, argv);
 
 	std::vector<double> wts = { 1, 9, 7, 7, 15 };
 
 	auto whiteAlgo = std::make_shared<space::AlgoLinearDepthTwoExt>(space::AlgoLinearDepthTwoExt(6, wts));
 
 	auto blackAlgo = space::CliAlgo::create(std::cin, std::cout);
+	auto terminal_colors = true; // config.contains(TerminalColorsFieldName);
+	auto unicode = false; //  config.contains(UnicodeFieldName);
 
 	bool recursiveError = false;
 	int moveCounter = 0;
@@ -132,7 +115,7 @@ int main(int argc, char const * const * const argv) {
 			<< "#" << moveCounter 
 			<<  "  " << getColorName(board->whoPlaysNext()) << " to play"
 			<< std::endl;
-		printBoard(std::cout, *board);
+		std::cout << board->as_string(terminal_colors, unicode, space::Color::White);
 		auto algo = board->whoPlaysNext() == space::Color::White ? whiteAlgo : blackAlgo;
 		try {
 

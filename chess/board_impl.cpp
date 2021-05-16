@@ -12,12 +12,6 @@ namespace space {
 
 	// CLASS BoardImpl
 
-	// static members
-	int BoardImpl::checkMateCounter;
-	int BoardImpl::staleMateCounter;
-	int BoardImpl::underCheckCounter;
-
-
 	Color BoardImpl::whoPlaysNext() const
 	{
 		return m_whoPlaysNext;
@@ -26,7 +20,6 @@ namespace space {
 	Color BoardImpl::getColor(bool current) const{
 		return (current == (this->m_whoPlaysNext == Color::White) ? Color::White : Color::Black);
 	}
-
 	
 	std::optional<Piece> BoardImpl::getPiece(Position position) const
 	{
@@ -70,7 +63,7 @@ namespace space {
 		}
 	}
 	
-	//TODO
+
 	Position space::BoardImpl::getKingPosition(Color color) const
 	{
 
@@ -87,7 +80,6 @@ namespace space {
 
 	bool BoardImpl::isStaleMate() const
 	{
-		++this->staleMateCounter;
 		if (!this->isUnderCheck(this->m_whoPlaysNext)) {
 			std::map<Move, IBoard::Ptr> allMoves = this->getValidMoves();
 			return allMoves.size() == 0;
@@ -96,8 +88,7 @@ namespace space {
 	}
 
 	bool BoardImpl::isCheckMate() const 
-	{
-		++this->checkMateCounter;
+	{		
 		if (this->isUnderCheck(this->m_whoPlaysNext)) {
 			std::map<Move, IBoard::Ptr> allMoves = this->getValidMoves();
 			return allMoves.size() == 0;
@@ -469,7 +460,6 @@ namespace space {
 	// if position specified, examines for king moving to that cell (useful in castling checks)
 	bool BoardImpl::isUnderCheck(Color color, std::optional<Position> targetKingPosition) const
 	{
-		++this->underCheckCounter;
 		int rank, file;
 		Position targetPosition = targetKingPosition.has_value() ?
 			targetKingPosition.value() 
@@ -581,19 +571,6 @@ namespace space {
 	}
 
 
-	//TODO
-	bool BoardImpl::isUnderCheck2(Color color, Position targetPosition) const
-	{
-		for(int i = 0; i < 8; i++)
-			for (int j = 0; j < 8; j++)
-			{
-				Piece p = this->m_pieces[i][j];
-				if (p.pieceType != PieceType::None && p.color != color)
-					if (canMove({ i, j, targetPosition.rank, targetPosition.file }))
-						return true;
-			}
-		return false;
-	}
 	std::vector<Move> BoardImpl::getAllMoves(Color color) const
 	{
 		std::vector<Move> allMoves;

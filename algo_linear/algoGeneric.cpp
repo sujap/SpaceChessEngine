@@ -262,9 +262,6 @@ namespace space {
 		refresh();
 		gameTreeSize = root->familySize();
 
-
-		// can (need to?) change pruning paramaters in between, should create new pruning object everytime ?
-
 		return this->root->bestMove();
 	}
 

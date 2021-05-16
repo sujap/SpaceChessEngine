@@ -24,14 +24,6 @@ namespace space {
 		static Ptr getStartingBoard();
 		static Ptr fromFen(const Fen& fen);
 
-		static int checkMateCounter;
-		static int staleMateCounter;
-		static int underCheckCounter;
-
-		// isUnderCheck temporarily made public
-		bool isUnderCheck(Color color, std::optional<Position> targetKingPosition = std::nullopt) const;
-		bool isUnderCheck2(Color color, Position targetPosition) const;
-
 		Position getKingPosition(Color color) const;
 
 
@@ -42,6 +34,7 @@ namespace space {
 		bool m_canBlackCastleLeft;
 		bool m_canBlackCastleRight;
 		Color m_whoPlaysNext;
+		bool isUnderCheck(Color color, std::optional<Position> targetKingPosition = std::nullopt) const;
 		bool checkObstructions(Move m) const;
 		bool canMove(Move m) const;
 		bool checkPathEmpty(Move m) const;
@@ -51,7 +44,5 @@ namespace space {
 		inline bool inRange(int x) const { return (x >= 0) && (x < 8); }
 		Color getColor(bool current = true) const;
 	};
-
-
 }
 

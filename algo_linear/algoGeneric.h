@@ -131,8 +131,6 @@ namespace space {
 		Move getNextMove(IBoard::Ptr board) override;
 		Algo442();
 
-	private:
-
 	};
 
 
